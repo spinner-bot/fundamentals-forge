@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markdown 语法完全指南</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #f5f5f0; color: #333; line-height: 1.75; display: flex;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  color: #ccc; overflow-y: auto; z-index: 100;
+  padding: 24px 0; font-size: 0.9rem;
+  box-shadow: 2px 0 20px rgba(0,0,0,0.15);
+}
+.sidebar-header {
+  text-align: center; padding: 0 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px;
+}
+.sidebar-header h2 { color: #fff; font-size: 1.1rem; margin-top: 8px; }
+.sidebar-header .md-icon {
+  width: 48px; height: 48px; background: linear-gradient(135deg, #2563eb, #7c3aed); border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 24px; color: #fff; font-weight: bold;
+}
+.sidebar-nav { padding: 0 12px; }
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 8px; color: #b0b0c0;
+  text-decoration: none; transition: all 0.2s; margin-bottom: 2px;
+}
+.sidebar-nav a:hover, .sidebar-nav a.active {
+  background: rgba(255,255,255,0.08); color: #fff;
+}
+.sidebar-nav .nav-num { font-size: 0.7rem; color: #60a5fa; font-weight: 700; width: 20px; flex-shrink: 0; }
+.sidebar-nav .nav-section { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 16px 12px 6px; }
+.sidebar-footer {
+  text-align: center; padding: 20px; color: #666; font-size: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.08); margin-top: 20px;
+}
+
+/* ===== Main ===== */
+.main { margin-left: 280px; flex: 1; min-height: 100vh; }
+
+/* ===== Hero ===== */
+.hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #2563eb 100%);
+  color: #fff; padding: 60px 48px 48px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero h1 { font-size: 2.8rem; font-weight: 800; position: relative; }
+.hero .subtitle { font-size: 1.15rem; opacity: 0.85; margin-top: 12px; position: relative; }
+.hero .badges { margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; }
+.hero .badges img { height: 22px; }
+
+/* ===== Content ===== */
+.content { max-width: 960px; margin: 0 auto; padding: 40px 48px 60px; }
+
+/* ===== Typography ===== */
+h2 {
+  font-size: 1.8rem; color: #0f172a; margin: 48px 0 20px;
+  padding-bottom: 10px; border-bottom: 3px solid #2563eb;
+  display: flex; align-items: center; gap: 10px;
+}
+h3 { font-size: 1.3rem; color: #1e3a5f; margin: 32px 0 14px; }
+h4 { font-size: 1.05rem; color: #555; margin: 20px 0 8px; }
+p { margin: 12px 0; }
+a { color: #2563eb; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Inline code */
+code {
+  background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px;
+  padding: 2px 6px; font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.88em; color: #7c3aed;
+}
+
+/* Code blocks */
+pre {
+  background: #1e293b; color: #e2e8f0; border-radius: 10px;
+  padding: 20px 24px; overflow-x: auto; margin: 16px 0;
+  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.88rem; line-height: 1.6;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+
+/* Rendered markdown preview box */
+.md-preview {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 24px; margin: 16px 0;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.md-preview h1, .md-preview h2, .md-preview h3, .md-preview h4 { border: none; margin-top: 8px; padding: 0; }
+.md-preview h1 { font-size: 1.8rem; }
+.md-preview h2 { font-size: 1.5rem; }
+.md-preview h3 { font-size: 1.2rem; }
+.md-preview blockquote { box-shadow: none; }
+.md-preview table { box-shadow: none; }
+.md-preview pre { box-shadow: none; margin: 8px 0; }
+
+/* ===== Tables ===== */
+table {
+  width: 100%; border-collapse: collapse; margin: 16px 0;
+  border-radius: 8px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+thead { background: #1e293b; color: #fff; }
+th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.9rem; }
+td { padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+tbody tr { background: #fff; transition: background 0.15s; }
+tbody tr:hover { background: #eff6ff; }
+tbody tr:nth-child(even) { background: #f8fafc; }
+tbody tr:nth-child(even):hover { background: #eff6ff; }
+
+/* ===== Blockquotes / Callouts ===== */
+blockquote {
+  border-left: 4px solid #2563eb; background: #fff;
+  margin: 16px 0; padding: 14px 20px; border-radius: 0 8px 8px 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.callout {
+  padding: 16px 20px; margin: 16px 0; border-radius: 10px;
+  display: flex; gap: 10px; align-items: flex-start;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.callout .callout-icon { font-size: 1.3rem; flex-shrink: 0; }
+.callout.note { background: #dbeafe; border: 1px solid #bfdbfe; }
+.callout.warn { background: #fff8e1; border: 1px solid #ffe082; }
+.callout.success { background: #e8f5e9; border: 1px solid #a5d6a7; }
+.callout.tip { background: #f3e8ff; border: 1px solid #d8b4fe; }
+
+/* ===== Mermaid ===== */
+.mermaid {
+  background: #fafaf7; border-radius: 10px; padding: 24px;
+  margin: 20px 0; text-align: center;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06); overflow-x: auto;
+}
+
+/* ===== Syntax Card ===== */
+.cmd-card {
+  background: #fff; border-radius: 12px; padding: 24px; margin: 24px 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #eee;
+  transition: box-shadow 0.2s;
+}
+.cmd-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.cmd-card .card-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.cmd-card .card-title {
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 1.25rem; font-weight: 700; color: #0f172a;
+  background: #f1f5f9; padding: 4px 12px; border-radius: 6px;
+}
+
+/* ===== Demo grid ===== */
+.demo-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0;
+}
+@media (max-width: 768px) { .demo-grid { grid-template-columns: 1fr; } }
+.demo-col {
+  border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0;
+}
+.demo-col .demo-label {
+  background: #1e293b; color: #fff; padding: 6px 14px;
+  font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.demo-col .demo-label.output { background: #2563eb; }
+.demo-col .demo-content { padding: 16px; background: #fff; }
+.demo-col .demo-content pre { margin: 0; box-shadow: none; border-radius: 6px; }
+
+/* ===== Badges ===== */
+.badge {
+  display: inline-block; padding: 2px 10px; border-radius: 12px;
+  font-size: 0.78rem; font-weight: 600; color: #fff;
+}
+.badge-blue { background: #2563eb; }
+.badge-green { background: #2da44e; }
+.badge-purple { background: #7c3aed; }
+.badge-yellow { background: #ca8a04; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .hero { padding: 40px 24px; }
+  .hero h1 { font-size: 1.8rem; }
+  .content { padding: 24px 20px; }
+}
+</style>
+<script>
+mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'loose',
+  themeVariables: {
+    primaryColor: '#dbeafe', primaryBorderColor: '#93c5fd',
+    secondaryColor: '#e0e7ff', secondaryBorderColor: '#a5b4fc',
+    tertiaryColor: '#d1fae5', tertiaryBorderColor: '#6ee7b7',
+    lineColor: '#64748b', textColor: '#334155',
+    fontSize: '14px'
+  }
+});
+</script>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="md-icon">M↓</div>
+    <h2>Markdown 指南</h2>
+    <p style="color:#888;font-size:0.8rem;">语法完全手册</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">📖 正文</div>
+    <a href="#s0"><span class="nav-num">0</span>阅读导航</a>
+    <a href="#s1"><span class="nav-num">1</span>什么是 Markdown</a>
+    <a href="#s2"><span class="nav-num">2</span>标题与段落</a>
+    <a href="#s3"><span class="nav-num">3</span>文本格式化</a>
+    <a href="#s4"><span class="nav-num">4</span>列表</a>
+    <a href="#s5"><span class="nav-num">5</span>链接与图片</a>
+    <a href="#s6"><span class="nav-num">6</span>代码</a>
+    <a href="#s7"><span class="nav-num">7</span>表格</a>
+    <a href="#s8"><span class="nav-num">8</span>引用与分隔</a>
+    <a href="#s9"><span class="nav-num">9</span>扩展语法</a>
+    <a href="#s10"><span class="nav-num">10</span>Mermaid 图表</a>
+    <a href="#s11"><span class="nav-num">11</span>HTML 混写</a>
+    <a href="#s12"><span class="nav-num">12</span>GFM 专项</a>
+    <a href="#s13"><span class="nav-num">13</span>最佳实践</a>
+    <div class="nav-section">📎 附录</div>
+    <a href="#sa"><span class="nav-num">A</span>速查表</a>
+    <a href="#sb"><span class="nav-num">B</span>编辑器推荐</a>
+    <a href="#sc"><span class="nav-num">C</span>工具链</a>
+  </nav>
+  <div class="sidebar-footer">Made with ❤️<br>持续更新中</div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+<!-- Hero -->
+<section class="hero">
+  <h1>📝 Markdown 语法完全指南</h1>
+  <p class="subtitle">从入门到精通&emsp;——&emsp;写出美观、结构化、可维护的文档</p>
+  <div class="badges">
+    <img src="https://img.shields.io/badge/Markdown-Syntax%20Guide-2563eb?style=for-the-badge&logo=markdown&logoColor=white" alt="Markdown Guide">
+    <img src="https://img.shields.io/badge/兼容-GFM-brightgreen?style=flat-square" alt="GFM">
+    <img src="https://img.shields.io/badge/语言-中文-brightgreen?style=flat-square" alt="lang">
+    <img src="https://img.shields.io/badge/更新-2025--07--09-orange?style=flat-square" alt="date">
+  </div>
+</section>
+
+<div class="content">
+
+<!-- ===== SECTION 0: 阅读导航 ===== -->
+<h2 id="s0">🧭 阅读导航</h2>
+
+<h3>📑 完整目录</h3>
+<ol>
+  <li><a href="#s1">📖 什么是 Markdown</a> — 历史 · 设计哲学 · 文件后缀</li>
+  <li><a href="#s2"># 标题与段落</a> — 六级标题 · 段落 · 换行</li>
+  <li><a href="#s3">✨ 文本格式化</a> — 粗体 · 斜体 · 删除线 · 高亮</li>
+  <li><a href="#s4">📋 列表</a> — 无序 · 有序 · 嵌套 · 任务列表</li>
+  <li><a href="#s5">🔗 链接与图片</a> — 行内 · 引用 · 自动链接 · 图片尺寸</li>
+  <li><a href="#s6">💻 代码</a> — 行内代码 · 围栏块 · 语法高亮 · diff</li>
+  <li><a href="#s7">📊 表格</a> — 基本表格 · 对齐 · 复杂表格</li>
+  <li><a href="#s8">💬 引用与分隔</a> — 引用块 · 嵌套 · 分隔线 · 转义</li>
+  <li><a href="#s9">🚀 扩展语法</a> — 脚注 · 任务列表 · 定义列表 · Emoji · 缩写</li>
+  <li><a href="#s10">📈 Mermaid 图表</a> — 流程图 · 时序图 · 状态图 · 饼图</li>
+  <li><a href="#s11">🏗️ HTML 混写</a> — 内嵌 HTML · 折叠 · 徽章 · 对齐</li>
+  <li><a href="#s12">🐙 GFM 专项</a> — GitHub 独有特性 · 告示块 · 自动链接</li>
+  <li><a href="#s13">✅ 最佳实践</a> — 规范 · 可读性 · 项目文档模板</li>
+</ol>
+<p><strong>附录</strong>：<a href="#sa">A. 速查表</a> · <a href="#sb">B. 编辑器推荐</a> · <a href="#sc">C. 工具链</a></p>
+
+<h3>🎨 阅读指南</h3>
+<table>
+  <thead><tr><th>读者类型</th><th>推荐路径</th></tr></thead>
+  <tbody>
+    <tr><td>🆕 <strong>零基础新手</strong></td><td>从头顺序阅读，重点看第 1–4 章</td></tr>
+    <tr><td>📝 <strong>日常写文档</strong></td><td>直接跳到第 2–7 章作为速查</td></tr>
+    <tr><td>🚀 <strong>进阶提升</strong></td><td>阅读第 9–12 章 + 附录</td></tr>
+  </tbody>
+</table>
+
+<h3>📌 演示格式说明</h3>
+<p>每个语法点采用 <strong>左源码 → 右渲染</strong> 的对照方式展示，让你一目了然。</p>
+
+</div>
+</main>
+</body>
+</html>
