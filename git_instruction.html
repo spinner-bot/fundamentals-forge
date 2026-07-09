@@ -300,6 +300,257 @@ mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'loose',
   </tbody>
 </table>
 
+
+<!-- ===== SECTION 1: 核心概念速览 ===== -->
+<h2 id="s1">1. 🗺️ 核心概念速览</h2>
+
+<h3>1.1 Git 的三区模型</h3>
+<blockquote>Git 在你的本地维护着<b>三个逻辑区域</b>，理解它们是理解一切 Git 命令的关键。</blockquote>
+
+<div class="mermaid">
+flowchart LR
+    A["📝 <b>工作区</b><br/>Working Directory<br/><i>你正在编辑的文件</i>"] -->|"git add"| B["📦 <b>暂存区</b><br/>Staging Area / Index<br/><i>下次提交的候选清单</i>"]
+    B -->|"git commit"| C["🗄️ <b>本地仓库</b><br/>Local Repository<br/><i>永久快照存档</i>"]
+    C -->|"git push"| D["☁️ <b>远程仓库</b><br/>Remote Repository<br/><i>GitHub / GitLab / Gitee</i>"]
+    D -->|"git fetch / pull"| C
+    C -->|"git checkout / switch"| A
+</div>
+
+<table>
+  <thead><tr><th>区域</th><th>英文名</th><th>存放位置</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><strong>工作区</strong></td><td>Working Directory</td><td>你硬盘上的项目文件夹</td><td>你实际编辑、创建、删除文件的地方</td></tr>
+    <tr><td><strong>暂存区</strong></td><td>Staging Area / Index</td><td><code>.git/index</code></td><td>一个"购物车"，决定下次提交包含哪些修改</td></tr>
+    <tr><td><strong>本地仓库</strong></td><td>Repository</td><td><code>.git/objects/</code></td><td>Git 的永久数据库，存着所有提交的快照</td></tr>
+    <tr><td><strong>远程仓库</strong></td><td>Remote</td><td>GitHub / GitLab 等服务器上</td><td>团队共享的中心化副本</td></tr>
+  </tbody>
+</table>
+
+<h3>1.2 文件生命周期</h3>
+<div class="mermaid">
+stateDiagram-v2
+    [*] --> Untracked : 新建文件
+    Untracked --> Staged : git add
+    Staged --> Committed : git commit
+    Committed --> Modified : 编辑文件
+    Modified --> Staged : git add
+    Staged --> Modified : 再次编辑
+    Committed --> [*] : 文件被删除
+    Untracked --> [*] : git clean / 手动删除
+</div>
+
+<div class="callout note">
+  <span class="callout-icon">💡</span>
+  <div><strong>一句话总结</strong>：Git 不跟踪"没 add 过的新文件"。一旦 <code>git add</code>，Git 就开始关注它了。</div>
+</div>
+
+<h3>1.3 Git 的快照哲学</h3>
+<div class="callout warn">
+  <span class="callout-icon">⚠️</span>
+  <div><strong>关键认知</strong>：Git 与其他版本控制系统（如 SVN）的根本区别在于 —— Git 存储的是<strong>快照（Snapshot）</strong>而非<strong>差异（Delta）</strong>。<br><br>
+  每次 <code>git commit</code>，Git 会把你暂存区中的<strong>全部文件拍一张照片</strong>存下来。没变的文件不会重复存储，而是引用上一次的快照（通过 SHA-1 哈希去重）。这让分支、回退、查询都极快。</div>
+</div>
+
+<!-- ===== SECTION 2: 基础配置篇 ===== -->
+<h2 id="s2">2. ⚙️ 基础配置篇</h2>
+<blockquote class="tip">🟢 <span class="badge badge-green">安全等级：安全</span> — 配置操作只影响设置，不改变代码。</blockquote>
+
+<!-- git config -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git config</span>
+    <span class="badges-row">
+      <span class="badge badge-green">入门</span>
+      <span class="badge badge-blue">只读</span>
+    </span>
+  </div>
+  <div class="formula">
+    <strong>📐 公式</strong>:<br>
+    git config [--global | --system | --local] &lt;key&gt; &lt;value&gt;<br>
+    git config [--global | --system | --local] --list<br>
+    git config [--global | --system | --local] --edit
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 设置 Git 的用户信息、编辑器偏好、别名等个性化参数。</p>
+
+  <h4>三级配置（优先级从高到低）</h4>
+  <div class="mermaid">
+graph TB
+    subgraph "覆盖关系：local 覆盖 global 覆盖 system"
+        L["🏠 <b>--local</b><br/>`.git/config`<br/>仅当前仓库"] -->|覆盖| G["👤 <b>--global</b><br/>`~/.gitconfig`<br/>当前用户所有仓库"]
+        G -->|覆盖| S["🖥️ <b>--system</b><br/>`/etc/gitconfig`<br/>整台机器所有用户"]
+    end
+  </div>
+
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>你是谁？（必做）</strong></td><td><code>git config --global user.name "Your Name"</code></td><td>你的名字，出现在提交记录中</td></tr>
+      <tr><td></td><td><code>git config --global user.email "you@example.com"</code></td><td>你的邮箱，匹配 GitHub 账户</td></tr>
+      <tr><td><strong>换默认编辑器</strong></td><td><code>git config --global core.editor "code --wait"</code></td><td>设为 VS Code（<code>--wait</code> 让 Git 等编辑器关闭）</td></tr>
+      <tr><td></td><td><code>git config --global core.editor vim</code></td><td>设为 Vim</td></tr>
+      <tr><td><strong>换默认分支名</strong></td><td><code>git config --global init.defaultBranch main</code></td><td>新仓库默认分支名从 <code>master</code> → <code>main</code></td></tr>
+      <tr><td><strong>换行符处理</strong></td><td><code>git config --global core.autocrlf input</code></td><td>Mac/Linux 用 <code>input</code></td></tr>
+      <tr><td></td><td><code>git config --global core.autocrlf true</code></td><td>Windows 用 <code>true</code>（检出转 CRLF，提交转 LF）</td></tr>
+      <tr><td><strong>设置代理</strong></td><td><code>git config --global http.proxy http://127.0.0.1:7890</code></td><td>科学上网加速 clone</td></tr>
+      <tr><td><strong>取消代理</strong></td><td><code>git config --global --unset http.proxy</code></td><td>恢复直连</td></tr>
+      <tr><td><strong>查看所有配置</strong></td><td><code>git config --list</code></td><td>列出当前生效的全部配置</td></tr>
+      <tr><td><strong>查看某一项</strong></td><td><code>git config user.name</code></td><td>查看当前用户名</td></tr>
+      <tr><td><strong>编辑配置文件</strong></td><td><code>git config --global --edit</code></td><td>用默认编辑器打开 ~/.gitconfig</td></tr>
+    </tbody>
+  </table>
+
+  <h4>🔧 常用别名（强烈推荐）</h4>
+  <pre><code># 在 ~/.gitconfig 的 [alias] 段中添加，或者下面这样一键设置：
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.st status
+git config --global alias.lg "log --oneline --graph --decorate --all"
+git config --global alias.unstage "restore --staged ."
+git config --global alias.last "log -1 HEAD"
+git config --global alias.undo "reset --soft HEAD~1"</code></pre>
+</div>
+
+<!-- git help -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git help</span>
+    <span class="badges-row">
+      <span class="badge badge-green">入门</span>
+      <span class="badge badge-blue">只读</span>
+    </span>
+  </div>
+  <div class="formula">
+    git help &lt;command&gt;<br>
+    git &lt;command&gt; --help<br>
+    git &lt;command&gt; -h
+  </div>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>详细手册</td><td><code>git help log</code></td><td>打开 log 命令的完整文档</td></tr>
+      <tr><td>快速参考</td><td><code>git log -h</code></td><td>只显示 log 的常用选项摘要</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== SECTION 3: 仓库操作篇 ===== -->
+<h2 id="s3">3. 🏗️ 仓库操作篇</h2>
+<blockquote class="tip">🟢 <span class="badge badge-green">安全等级：安全</span> — 创建仓库不影响已有项目。</blockquote>
+
+<!-- git init -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git init</span>
+    <span class="badges-row">
+      <span class="badge badge-green">入门</span>
+      <span class="badge badge-green">安全</span>
+    </span>
+  </div>
+  <div class="formula">
+    git init [directory]<br>
+    git init --initial-branch=main
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 把普通文件夹变成 Git 仓库。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>当前目录初始化</td><td><code>git init</code></td><td>在当前位置创建 <code>.git</code> 隐藏目录</td></tr>
+      <tr><td>指定目录初始化</td><td><code>git init my-project</code></td><td>创建 <code>my-project/</code> 并初始化</td></tr>
+      <tr><td>指定默认分支</td><td><code>git init --initial-branch=main</code></td><td>默认分支命名为 main 而非 master</td></tr>
+    </tbody>
+  </table>
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div><code>git init</code> 只是创建 <code>.git</code> 文件夹，<strong>不会自动提交任何东西</strong>。你还需要 <code>git add</code> + <code>git commit</code>。</div>
+  </div>
+</div>
+
+<!-- git clone -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git clone</span>
+    <span class="badges-row">
+      <span class="badge badge-green">入门</span>
+      <span class="badge badge-green">安全</span>
+    </span>
+  </div>
+  <div class="formula">
+    git clone &lt;url&gt; [directory]<br>
+    git clone --depth &lt;n&gt; &lt;url&gt;<br>
+    git clone --branch &lt;name&gt; &lt;url&gt;<br>
+    git clone --single-branch &lt;url&gt;
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 把远程仓库完整（或按需）下载到本地。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>标准克隆</strong></td><td><code>git clone https://github.com/user/repo.git</code></td><td>完整克隆，默认分支为 main/master</td></tr>
+      <tr><td>克隆到指定文件夹</td><td><code>git clone &lt;url&gt; my-folder</code></td><td>不叫 repo 原名，叫 my-folder</td></tr>
+      <tr><td><strong>浅克隆（提速）</strong></td><td><code>git clone --depth 1 &lt;url&gt;</code></td><td>只拉最近 1 次提交，大仓库秒下</td></tr>
+      <tr><td>深度浅克隆</td><td><code>git clone --depth 10 &lt;url&gt;</code></td><td>拉最近 10 次提交</td></tr>
+      <tr><td>克隆指定分支</td><td><code>git clone -b develop &lt;url&gt;</code></td><td>克隆后直接切到 develop 分支</td></tr>
+      <tr><td>只克隆一个分支</td><td><code>git clone --single-branch -b main &lt;url&gt;</code></td><td>节省空间，只下载 main 分支</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div>浅克隆（<code>--depth 1</code>）下载飞快，但本地没有完整历史，后续 <code>git log</code> 只能看到浅层记录。如需完整历史，用 <code>git fetch --unshallow</code> 补全。</div>
+  </div>
+</div>
+
+<!-- .gitignore -->
+<h3>.gitignore — 忽略文件规则</h3>
+<div class="cmd-card">
+  <p class="one-liner">💡 <strong>一句话</strong>: 告诉 Git 哪些文件和文件夹不要跟踪（日志、依赖包、编译产物、密钥等）。</p>
+  <p><strong>📐 公式</strong>: 在仓库根目录创建 <code>.gitignore</code> 文件，每行一条规则。</p>
+
+  <h4>语法规则速查</h4>
+  <table>
+    <thead><tr><th>规则</th><th>含义</th><th>示例</th></tr></thead>
+    <tbody>
+      <tr><td><code>*.log</code></td><td>匹配所有 .log 文件</td><td><code>error.log</code>, <code>debug.log</code></td></tr>
+      <tr><td><code>node_modules/</code></td><td>匹配整个目录</td><td><code>node_modules/</code> 下的所有内容</td></tr>
+      <tr><td><code>/dist</code></td><td>只匹配<b>根目录</b>下的 dist</td><td><code>dist/</code>，不匹配 <code>src/dist/</code></td></tr>
+      <tr><td><code>*.txt</code> 然后 <code>!important.txt</code></td><td>先忽略所有 .txt，再取消忽略 important.txt</td><td><code>!</code> 表示例外</td></tr>
+      <tr><td><code>**/temp/</code></td><td><code>**</code> 匹配任意层级</td><td><code>a/temp/</code>, <code>a/b/temp/</code></td></tr>
+    </tbody>
+  </table>
+
+  <h4>典型模板（前端/Node 项目）</h4>
+  <pre><code># 依赖
+node_modules/
+
+# 编译产物
+dist/
+build/
+.out/
+
+# 环境变量（含密钥）
+.env
+.env.local
+.env.*.local
+
+# 编辑器配置
+.vscode/
+.idea/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log</code></pre>
+
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div>GitHub 提供了各语言的标准 <code>.gitignore</code> 模板：<a href="https://github.com/github/gitignore" target="_blank">github.com/github/gitignore</a></div>
+  </div>
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div><code>.gitignore</code> <strong>只对未跟踪的文件生效</strong>。如果文件已经被 <code>git add</code> 过了，需要先 <code>git rm --cached &lt;file&gt;</code> 移除跟踪。</div>
+  </div>
+</div>
+
 </div>
 </main>
 </body>
