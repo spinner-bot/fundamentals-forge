@@ -1056,6 +1056,465 @@ ___</code></pre>
   <p>需要转义的符号完整列表：<code>\ ` * _ { } [ ] ( ) # + - . ! | &lt; &gt;</code></p>
 </div>
 
+
+<!-- ===== SECTION 9: 扩展语法 ===== -->
+<h2 id="s9">9. 🚀 扩展语法</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">脚注（Footnote）</span>
+    <span class="badge badge-purple">扩展</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>Markdown 由 John Gruber
+设计[^1]。
+
+[^1]: Gruber 的博客：
+Daring Fireball。</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <p>Markdown 由 John Gruber 设计<sup><a href="#fn1">[1]</a></sup>。</p>
+        <hr>
+        <p id="fn1"><sup>[1]</sup> Gruber 的博客：Daring Fireball。</p>
+      </div>
+    </div>
+  </div>
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div>脚注在学术文档和技术写作中非常有用。注意：<strong>不是所有平台都支持</strong>，GitHub 支持，但 VS Code 内置预览不支持。</div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">定义列表</span>
+    <span class="badge badge-purple">扩展</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>HTML
+: 超文本标记语言
+
+CSS
+: 层叠样式表
+: 控制网页外观</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <dl>
+          <dt><strong>HTML</strong></dt>
+          <dd>超文本标记语言</dd>
+          <dt><strong>CSS</strong></dt>
+          <dd>层叠样式表</dd>
+          <dd>控制网页外观</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">Emoji 表情</span>
+    <span class="badge badge-blue">技巧</span>
+  </div>
+
+  <table>
+    <thead><tr><th>方式</th><th>示例</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>直接输入</strong></td><td>👍 👎 🎉 ✅ ❌</td><td>Windows: <code>Win + .</code> Mac: <code>Ctrl + Cmd + Space</code></td></tr>
+      <tr><td><strong>短代码</strong></td><td><code>:smile:</code> → 😄</td><td>GitHub 支持，VS Code 需插件</td></tr>
+      <tr><td><strong>复制粘贴</strong></td><td>从 emojipedia.org 复制</td><td>通用，稳定</td></tr>
+    </tbody>
+  </table>
+
+  <details style="margin:12px 0;">
+    <summary><strong>常用 Emoji 短代码速查</strong></summary>
+    <table style="margin-top:8px;">
+      <thead><tr><th>短代码</th><th>表情</th><th>短代码</th><th>表情</th></tr></thead>
+      <tbody>
+        <tr><td><code>:smile:</code></td><td>😄</td><td><code>:heart:</code></td><td>❤️</td></tr>
+        <tr><td><code>:+1:</code></td><td>👍</td><td><code>:rocket:</code></td><td>🚀</td></tr>
+        <tr><td><code>:tada:</code></td><td>🎉</td><td><code>:bulb:</code></td><td>💡</td></tr>
+        <tr><td><code>:warning:</code></td><td>⚠️</td><td><code>:white_check_mark:</code></td><td>✅</td></tr>
+        <tr><td><code>:x:</code></td><td>❌</td><td><code>:fire:</code></td><td>🔥</td></tr>
+        <tr><td><code>:bug:</code></td><td>🐛</td><td><code>:book:</code></td><td>📖</td></tr>
+        <tr><td><code>:link:</code></td><td>🔗</td><td><code>:wrench:</code></td><td>🔧</td></tr>
+        <tr><td><code>:memo:</code></td><td>📝</td><td><code>:zap:</code></td><td>⚡</td></tr>
+      </tbody>
+    </table>
+  </details>
+</div>
+
+<!-- ===== SECTION 10: Mermaid 图表 ===== -->
+<h2 id="s10">10. 📈 Mermaid 图表</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">在 Markdown 中画图</span>
+    <span class="badge badge-purple">进阶</span>
+  </div>
+  <p>Mermaid 是一个用文本生成图表的 JS 库。GitHub 原生支持 Mermaid，在代码块中写 <code>mermaid</code> 即可。</p>
+
+  <h4>流程图（Flowchart）</h4>
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>```mermaid
+flowchart TD
+    A[开始] --> B{判断}
+    B -->|是| C[执行A]
+    B -->|否| D[执行B]
+    C --> E[结束]
+    D --> E
+```</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content">
+        <div class="mermaid">
+flowchart TD
+    A[开始] --> B{判断}
+    B -->|是| C[执行A]
+    B -->|否| D[执行B]
+    C --> E[结束]
+    D --> E
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h4>时序图（Sequence Diagram）</h4>
+  <pre><code>```mermaid
+sequenceDiagram
+    actor U as 用户
+    participant F as 前端
+    participant B as 后端
+    U->>F: 点击登录
+    F->>B: POST /api/login
+    B-->>F: 返回 token
+    F-->>U: 跳转首页
+```</code></pre>
+
+  <div class="mermaid">
+sequenceDiagram
+    actor U as 用户
+    participant F as 前端
+    participant B as 后端
+    U->>F: 点击登录
+    F->>B: POST /api/login
+    B-->>F: 返回 token
+    F-->>U: 跳转首页
+  </div>
+
+  <h4>支持的图表类型</h4>
+  <table>
+    <thead><tr><th>类型</th><th>代码</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td>流程图</td><td><code>flowchart TD/LR</code></td><td>流程、决策树</td></tr>
+      <tr><td>时序图</td><td><code>sequenceDiagram</code></td><td>API 调用、消息传递</td></tr>
+      <tr><td>类图</td><td><code>classDiagram</code></td><td>类关系、继承结构</td></tr>
+      <tr><td>状态图</td><td><code>stateDiagram-v2</code></td><td>状态机、生命周期</td></tr>
+      <tr><td>ER 图</td><td><code>erDiagram</code></td><td>数据库关系</td></tr>
+      <tr><td>甘特图</td><td><code>gantt</code></td><td>项目计划、时间线</td></tr>
+      <tr><td>饼图</td><td><code>pie</code></td><td>比例分布</td></tr>
+      <tr><td>Git 图</td><td><code>gitGraph</code></td><td>分支、合并历史</td></tr>
+    </tbody>
+  </table>
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div>GitHub、GitLab、Notion 均原生支持 Mermaid。VS Code 需安装 <strong>Markdown Preview Mermaid Support</strong> 插件。</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 11: HTML 混写 ===== -->
+<h2 id="s11">11. 🏗️ HTML 混写</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">Markdown + HTML = 无限可能</span>
+    <span class="badge badge-purple">进阶</span>
+  </div>
+  <p>Markdown 的设计目标之一就是"不够用时直接用 HTML"。<strong>几乎所有 HTML 标签都可以直接在 Markdown 中使用。</strong></p>
+
+  <h4>常用 HTML 技巧</h4>
+  <table>
+    <thead><tr><th>需求</th><th>HTML 写法</th><th>Markdown 是否支持</th></tr></thead>
+    <tbody>
+      <tr><td><strong>图片尺寸</strong></td><td><code>&lt;img src="a.jpg" width="300"&gt;</code></td><td>❌ 不支持</td></tr>
+      <tr><td><strong>文字颜色</strong></td><td><code>&lt;span style="color:red"&gt;红&lt;/span&gt;</code></td><td>❌ 不支持</td></tr>
+      <tr><td><strong>文字居中</strong></td><td><code>&lt;p align="center"&gt;居中&lt;/p&gt;</code></td><td>❌ 不支持</td></tr>
+      <tr><td><strong>折叠面板</strong></td><td><code>&lt;details&gt;&lt;summary&gt;标题&lt;/summary&gt;...&lt;/details&gt;</code></td><td>❌ 不支持</td></tr>
+      <tr><td><strong>键盘键</strong></td><td><code>&lt;kbd&gt;Ctrl&lt;/kbd&gt;</code></td><td>❌ 不支持</td></tr>
+      <tr><td><strong>上标/下标</strong></td><td><code>X&lt;sup&gt;2&lt;/sup&gt; H&lt;sub&gt;2&lt;/sub&gt;O</code></td><td>部分支持</td></tr>
+      <tr><td><strong>视频嵌入</strong></td><td><code>&lt;video src="demo.mp4" controls&gt;</code></td><td>❌ 不支持</td></tr>
+    </tbody>
+  </table>
+
+  <h4>折叠面板示例（Details / Summary）</h4>
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>&lt;details&gt;
+&lt;summary&gt;点我展开&lt;/summary&gt;
+
+这里的内容默认折叠。
+
+- 可以有列表
+- 可以有代码块
+
+```js
+console.log("hello");
+```
+&lt;/details&gt;</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <details>
+          <summary><strong>点我展开</strong></summary>
+          <p>这里的内容默认折叠。</p>
+          <ul><li>可以有列表</li><li>可以有代码块</li></ul>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div>HTML 块级标签（<code>&lt;div&gt;</code>、<code>&lt;table&gt;</code> 等）前后需空一行。HTML 标签内的 Markdown 语法<strong>不会被解析</strong>，除非在标签上添加 <code>markdown="1"</code> 属性（部分解析器支持）。</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 12: GFM 专项 ===== -->
+<h2 id="s12">12. 🐙 GFM 专项</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">GitHub Flavored Markdown 独有特性总览</span>
+  </div>
+
+  <table>
+    <thead><tr><th>特性</th><th>说明</th><th>在 GitHub 上</th></tr></thead>
+    <tbody>
+      <tr><td>✅ <strong>任务列表</strong></td><td><code>- [ ]</code> / <code>- [x]</code></td><td>可点击切换</td></tr>
+      <tr><td>📋 <strong>表格</strong></td><td>管道符 <code>|</code> 分隔</td><td>自动渲染</td></tr>
+      <tr><td>🗑️ <strong>删除线</strong></td><td><code>~~text~~</code></td><td>渲染为 <del>删除线</del></td></tr>
+      <tr><td>🔗 <strong>自动链接</strong></td><td>直接写 URL 自动变链接</td><td>任何 URL 自动链接</td></tr>
+      <tr><td>💬 <strong>告示块</strong></td><td><code>> [!NOTE]</code> 等五种</td><td>彩色提示框</td></tr>
+      <tr><td>📈 <strong>Mermaid 图</strong></td><td><code>```mermaid</code></td><td>渲染为 SVG</td></tr>
+      <tr><td>🔢 <strong>脚注</strong></td><td><code>[^1]</code></td><td>文末自动汇总</td></tr>
+      <tr><td>🗺️ <strong>地理数据</strong></td><td><code>```geojson</code> / <code>```topojson</code></td><td>渲染为地图</td></tr>
+      <tr><td>📐 <strong>数学公式</strong></td><td><code>$E=mc^2$</code> / <code>$$公式$$</code></td><td>LaTeX 渲染（MathJax）</td></tr>
+      <tr><td>🏓 <strong>提及用户</strong></td><td><code>@username</code></td><td>发通知给对应用户</td></tr>
+      <tr><td>🎫 <strong>引用 Issue/PR</strong></td><td><code>#123</code> / <code>org/repo#123</code></td><td>自动链接到 Issue</td></tr>
+      <tr><td>🔗 <strong>引用提交</strong></td><td><code>abc1234</code> / 完整 SHA</td><td>自动链接到 commit</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">数学公式（LaTeX）</span>
+    <span class="badge badge-purple">进阶</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>行内公式：$E = mc^2$
+
+块级公式：
+$$
+\sum_{i=1}^{n} x_i = x_1 + x_2 + ... + x_n
+$$</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <p>行内公式：<em>E = mc²</em></p>
+        <p>块级公式：Σ xᵢ</p>
+      </div>
+    </div>
+  </div>
+  <p>GitHub 和 Obsidian 原生支持 LaTeX 数学公式，使用的是 MathJax 引擎。</p>
+</div>
+
+<!-- ===== SECTION 13: 最佳实践 ===== -->
+<h2 id="s13">13. ✅ 最佳实践</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">书写规范</span>
+  </div>
+
+  <table>
+    <thead><tr><th>规则</th><th>推荐</th><th>避免</th></tr></thead>
+    <tbody>
+      <tr><td>标题层级递进</td><td><code># → ## → ###</code> 不跳级</td><td><code># → ###</code> 跳过 ##</td></tr>
+      <tr><td>每行不超过</td><td>≤ 120 字符</td><td>超长行不换行</td></tr>
+      <tr><td>文件末尾</td><td>留一个空行</td><td>最后一行无空行</td></tr>
+      <tr><td>中英文混排</td><td>中英文之间加空格</td><td>中文English挤在一起</td></tr>
+      <tr><td>粗体/斜体</td><td><code>**粗体**</code> <code>*斜体*</code></td><td><code>__粗体__</code> <code>_斜体_</code></td></tr>
+      <tr><td>无序列表</td><td>统一用 <code>-</code></td><td><code>*</code> 和 <code>+</code> 混用</td></tr>
+      <tr><td>有序列表</td><td>全写 <code>1.</code></td><td>手动维护递增数字</td></tr>
+      <tr><td>代码块</td><td>用围栏 <code>```</code> + 语言标识</td><td>缩进代码块（4 空格）</td></tr>
+      <tr><td>链接</td><td>引用式（长文档）</td><td>所有链接都行内（影响阅读）</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">📁 项目文档模板</span>
+  </div>
+  <p>一个标准项目推荐的文档结构：</p>
+  <pre><code>项目根目录/
+├── README.md          # 项目介绍、快速开始
+├── CHANGELOG.md       # 版本变更记录
+├── CONTRIBUTING.md    # 贡献指南
+├── LICENSE            # 许可证
+└── docs/
+    ├── guide/         # 使用指南
+    ├── api/           # API 文档
+    └── architecture/  # 架构设计文档</code></pre>
+
+  <h4>README.md 模板</h4>
+  <pre><code># 项目名称
+
+&lt;p align="center"&gt;
+  &lt;img src="logo.png" width="200"&gt;
+&lt;/p&gt;
+
+&lt;p align="center"&gt;
+  &lt;img src="https://img.shields.io/badge/...&gt;
+&lt;/p&gt;
+
+## ✨ 特性
+- 特性一
+- 特性二
+
+## 🚀 快速开始
+
+### 环境要求
+- Node.js >= 18
+- npm >= 9
+
+### 安装
+
+```bash
+git clone &lt;repo-url&gt;
+cd project
+npm install
+```
+
+### 运行
+
+```bash
+npm run dev
+```
+
+## 📖 文档
+- [使用指南](docs/guide.md)
+- [API 文档](docs/api.md)
+
+## 🤝 贡献
+欢迎提 Issue 和 Pull Request！
+
+## 📄 许可证
+MIT © 2025</code></pre>
+</div>
+
+<!-- ===== 附录 ===== -->
+<h2 id="sa">附录 A：语法速查表</h2>
+
+<h3>🔥 高频使用</h3>
+<table>
+  <thead><tr><th>元素</th><th>语法</th></tr></thead>
+  <tbody>
+    <tr><td><strong>标题</strong></td><td><code># H1</code> <code>## H2</code> <code>### H3</code></td></tr>
+    <tr><td><strong>粗体</strong></td><td><code>**粗体**</code></td></tr>
+    <tr><td><strong>斜体</strong></td><td><code>*斜体*</code></td></tr>
+    <tr><td><strong>删除线</strong></td><td><code>~~删除~~</code></td></tr>
+    <tr><td><strong>行内代码</strong></td><td><code>`code`</code></td></tr>
+    <tr><td><strong>代码块</strong></td><td><code>```lang ... ```</code></td></tr>
+    <tr><td><strong>链接</strong></td><td><code>[文字](url)</code></td></tr>
+    <tr><td><strong>图片</strong></td><td><code>![alt](url)</code></td></tr>
+    <tr><td><strong>无序列表</strong></td><td><code>- 项目</code></td></tr>
+    <tr><td><strong>有序列表</strong></td><td><code>1. 项目</code></td></tr>
+    <tr><td><strong>任务列表</strong></td><td><code>- [ ] 待办</code> <code>- [x] 已完成</code></td></tr>
+    <tr><td><strong>引用</strong></td><td><code>&gt; 引用文字</code></td></tr>
+    <tr><td><strong>分隔线</strong></td><td><code>---</code></td></tr>
+    <tr><td><strong>表格</strong></td><td><code>\| A \| B \|</code> + <code>\|----\|----\|</code></td></tr>
+    <tr><td><strong>脚注</strong></td><td><code>[^label]</code> + <code>[^label]: 内容</code></td></tr>
+    <tr><td><strong>Emoji</strong></td><td><code>:smile:</code> → 😄</td></tr>
+  </tbody>
+</table>
+
+<h3>🔗 引用速查</h3>
+<table>
+  <thead><tr><th>引用对象</th><th>语法</th><th>平台</th></tr></thead>
+  <tbody>
+    <tr><td>用户</td><td><code>@username</code></td><td>GitHub</td></tr>
+    <tr><td>Issue/PR</td><td><code>#123</code></td><td>GitHub</td></tr>
+    <tr><td>跨仓库 Issue</td><td><code>org/repo#123</code></td><td>GitHub</td></tr>
+    <tr><td>提交</td><td><code>abc1234</code></td><td>GitHub</td></tr>
+  </tbody>
+</table>
+
+<h2 id="sb">附录 B：编辑器推荐</h2>
+
+<table>
+  <thead><tr><th>编辑器</th><th>类型</th><th>亮点</th><th>价格</th></tr></thead>
+  <tbody>
+    <tr><td><strong>VS Code</strong></td><td>代码编辑器</td><td>免费、插件丰富、内置预览（Ctrl+Shift+V）</td><td>免费</td></tr>
+    <tr><td><strong>Typora</strong></td><td>专用编辑器</td><td>所见即所得、数学公式、导出 PDF/Word</td><td>付费</td></tr>
+    <tr><td><strong>Obsidian</strong></td><td>知识管理</td><td>双向链接、图谱、插件生态、本地优先</td><td>免费</td></tr>
+    <tr><td><strong>Notion</strong></td><td>全能笔记</td><td>数据库、协作、模板、/ 命令</td><td>免费+付费</td></tr>
+    <tr><td><strong>MarkText</strong></td><td>开源编辑器</td><td>所见即所得、Typora 替代</td><td>免费开源</td></tr>
+    <tr><td><strong>Zettlr</strong></td><td>学术写作</td><td>Zettelkasten、引用管理、LaTeX</td><td>免费开源</td></tr>
+  </tbody>
+</table>
+
+<h2 id="sc">附录 C：工具链</h2>
+
+<table>
+  <thead><tr><th>工具</th><th>作用</th><th>命令/链接</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Pandoc</strong></td><td>万能文档转换器</td><td><code>pandoc in.md -o out.pdf</code></td></tr>
+    <tr><td><strong>Prettier</strong></td><td>Markdown 格式化</td><td><code>npx prettier --write "*.md"</code></td></tr>
+    <tr><td><strong>markdownlint</strong></td><td>Markdown 规范检查</td><td>VS Code 插件 / CLI</td></tr>
+    <tr><td><strong>Mermaid Live</strong></td><td>在线编辑 Mermaid 图</td><td>mermaid.live</td></tr>
+    <tr><td><strong>Shields.io</strong></td><td>生成徽章</td><td>shields.io</td></tr>
+    <tr><td><strong>Tables Generator</strong></td><td>可视化创建表格</td><td>tablesgenerator.com</td></tr>
+    <tr><td><strong>MdBook</strong></td><td>将 .md 生成电子书</td><td>rust-lang.github.io/mdBook</td></tr>
+    <tr><td><strong>Docusaurus</strong></td><td>文档网站生成器</td><td>docusaurus.io</td></tr>
+    <tr><td><strong>VitePress</strong></td><td>Vite 驱动的文档站</td><td>vitepress.dev</td></tr>
+  </tbody>
+</table>
+
+<div class="callout tip" style="margin-top:24px;">
+  <span class="callout-icon">🚀</span>
+  <div><strong>推荐组合</strong>：VS Code 写 + Prettier 格式化 + markdownlint 纠错 + Mermaid Live 画图 + Shields.io 做徽章。一套下来，文档质量飞升。</div>
+</div>
+
+<!-- Footer -->
+<div style="text-align:center; padding: 40px 0 20px; color: #999; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 40px;">
+  <p>📝 Made with ❤️ | 持续更新中 | 欢迎补充和纠错</p>
+  <p style="margin-top:4px;">
+    <a href="https://github.com/spinner-bot/fundamentals-forge" target="_blank">GitHub</a> ·
+    <a href="#s0">返回导航</a>
+  </p>
+</div>
+
 </div>
 </main>
 </body>
