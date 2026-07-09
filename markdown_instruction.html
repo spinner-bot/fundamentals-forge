@@ -296,6 +296,386 @@ mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'loose',
 <h3>📌 演示格式说明</h3>
 <p>每个语法点采用 <strong>左源码 → 右渲染</strong> 的对照方式展示，让你一目了然。</p>
 
+
+<!-- ===== SECTION 1: 什么是 Markdown ===== -->
+<h2 id="s1">1. 📖 什么是 Markdown</h2>
+
+<div class="cmd-card">
+  <h3>📜 起源与设计哲学</h3>
+  <p>Markdown 由 <strong>John Gruber</strong> 和 <strong>Aaron Swartz</strong> 于 2004 年创建。核心理念：</p>
+  <blockquote>用<strong>纯文本</strong>标记语法，写出可以轻松转换为 HTML 的文档。即使不渲染，纯文本本身也<strong>易读易写</strong>。</blockquote>
+
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div><strong>一句话</strong>：Markdown = 用最简单的符号（# * - [ ]）来给文本"排版"，让任何人都能快速写出结构清晰的文档。</div>
+  </div>
+
+  <h4>三大核心设计原则</h4>
+  <table>
+    <thead><tr><th>原则</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td>📖 <strong>可读性优先</strong></td><td>源码本身就应该像纯文本一样易读，而非一堆标签</td></tr>
+      <tr><td>🔧 <strong>易于书写</strong></td><td>不需要记忆复杂的语法，最常用的格式化只需几个符号</td></tr>
+      <tr><td>🔄 <strong>可转换性</strong></td><td>可以转换为 HTML、PDF、Word、LaTeX 等多种格式</td></tr>
+    </tbody>
+  </table>
+
+  <h4>文件后缀</h4>
+  <table>
+    <thead><tr><th>后缀</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><code>.md</code></td><td>最常用，推荐</td></tr>
+      <tr><td><code>.markdown</code></td><td>完整拼写，也常见</td></tr>
+      <tr><td><code>.mdx</code></td><td>MDX 格式（Markdown + JSX 组件），用于 React 文档站点</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <h3>🌐 Markdown 的"方言"们</h3>
+  <p>原始的 Markdown 功能有限，后来出现了多种扩展版本：</p>
+  <table>
+    <thead><tr><th>方言</th><th>全称</th><th>特色</th></tr></thead>
+    <tbody>
+      <tr><td><strong>GFM</strong></td><td>GitHub Flavored Markdown</td><td>表格、任务列表、删除线、自动链接、告示块 — 最流行的版本</td></tr>
+      <tr><td><strong>CommonMark</strong></td><td>—</td><td>严格规范，消除歧义。GFM 基于它</td></tr>
+      <tr><td><strong>MDX</strong></td><td>Markdown + JSX</td><td>可在 Markdown 中使用 React/Vue 组件</td></tr>
+      <tr><td><strong>R Markdown</strong></td><td>—</td><td>嵌入 R 代码，数据科学领域常用</td></tr>
+    </tbody>
+  </table>
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div>本指南以 <strong>GFM（GitHub Flavored Markdown）</strong> 为基准，这是目前使用最广泛、支持最丰富的版本。</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 2: 标题与段落 ===== -->
+<h2 id="s2">2. # 标题与段落</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title"># 标题 Heading</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+  <p>Markdown 支持六级标题，对应 HTML 的 <code>&lt;h1&gt;</code> ~ <code>&lt;h6&gt;</code>。</p>
+
+  <h4>语法对比</h4>
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code># 一级标题
+## 二级标题
+### 三级标题
+#### 四级标题
+##### 五级标题
+###### 六级标题</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview"><h1>一级标题</h1><h2>二级标题</h2><h3>三级标题</h3><h4>四级标题</h4><h5>五级标题</h5><h6>六级标题</h6></div>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <span class="callout-icon">💡</span>
+    <div><strong>推荐</strong>：<code>#</code> 和标题文字之间加一个空格（<code># 标题</code>），部分解析器对 <code>#标题</code> 不兼容。<br>
+    <strong>习惯</strong>：大多数写作者只用前三级标题，深层结构用列表代替。</div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">段落与换行</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>这是第一段。
+
+这是第二段（中间空一行）。
+
+这是同一段内的
+直接换行（软换行）。
+
+这是强制换行（行尾两个空格）··
+新一行从此开始。</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <p>这是第一段。</p>
+        <p>这是第二段（中间空一行）。</p>
+        <p>这是同一段内的直接换行（软换行）。</p>
+        <p>这是强制换行（行尾两个空格）<br>新一行从此开始。</p>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>方式</th><th>写法</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>新段落</td><td>段落之间空一行</td><td>产生 <code>&lt;p&gt;</code> 标签，间距较大</td></tr>
+      <tr><td>软换行</td><td>直接换行（不空行）</td><td>同一段落，渲染为空格</td></tr>
+      <tr><td>强制换行</td><td>行尾加两个空格再回车</td><td>产生 <code>&lt;br&gt;</code>，另起一行</td></tr>
+      <tr><td>GFM 换行</td><td>直接换行即可</td><td>在 GitHub 上，段落内直接换行就渲染为 <code>&lt;br&gt;</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== SECTION 3: 文本格式化 ===== -->
+<h2 id="s3">3. ✨ 文本格式化</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">粗体 / 斜体 / 删除线</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>这是 **粗体文字**
+这是 __也是粗体__
+
+这是 *斜体文字*
+这是 _也是斜体_
+
+这是 ***粗斜体***
+
+这是 ~~删除线文字~~
+
+这是 `行内代码`
+
+这是 ==高亮文字==
+（部分编辑器支持）</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <p>这是 <strong>粗体文字</strong><br>这是 <strong>也是粗体</strong></p>
+        <p>这是 <em>斜体文字</em><br>这是 <em>也是斜体</em></p>
+        <p>这是 <strong><em>粗斜体</em></strong></p>
+        <p>这是 <del>删除线文字</del></p>
+        <p>这是 <code>行内代码</code></p>
+        <p>这是 <mark>高亮文字</mark></p>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>语法</th><th>效果</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><code>**文字**</code></td><td><strong>粗体</strong></td><td>推荐用 <code>**</code>，不用 <code>__</code></td></tr>
+      <tr><td><code>*文字*</code></td><td><em>斜体</em></td><td>推荐用 <code>*</code>，不用 <code>_</code></td></tr>
+      <tr><td><code>***文字***</code></td><td><strong><em>粗斜体</em></strong></td><td>三个星号</td></tr>
+      <tr><td><code>~~文字~~</code></td><td><del>删除线</del></td><td>GFM 扩展</td></tr>
+      <tr><td><code>`文字`</code></td><td><code>行内代码</code></td><td>反引号包裹</td></tr>
+      <tr><td><code>==文字==</code></td><td><mark>高亮</mark></td><td>部分编辑器支持（Typora/Obsidian），非标准 GFM</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">下标 / 上标 / 键盘键</span>
+    <span class="badge badge-purple">扩展</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>H~2~O（下标）
+X^2^（上标）
+&lt;kbd&gt;Ctrl&lt;/kbd&gt; + &lt;kbd&gt;C&lt;/kbd&gt;</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <p>H<sub>2</sub>O（下标）</p>
+        <p>X<sup>2</sup>（上标）</p>
+        <p><kbd>Ctrl</kbd> + <kbd>C</kbd></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div>下标 <code>~</code> 和上标 <code>^</code> 是部分编辑器（如 Typora）的扩展语法，<strong>不是 GFM 标准</strong>。GitHub 上不支持，需要用 HTML 标签代替。</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 4: 列表 ===== -->
+<h2 id="s4">4. 📋 列表</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">无序列表</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>- 第一项
+- 第二项
+- 第三项
+
+* 星号也可以
++ 加号也可以
+
+  - 缩进两个空格
+    - 再缩进
+      - 三级嵌套</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <ul>
+          <li>第一项</li>
+          <li>第二项</li>
+          <li>第三项</li>
+        </ul>
+        <ul>
+          <li>星号也可以</li>
+          <li>加号也可以</li>
+        </ul>
+        <ul>
+          <li>缩进两个空格
+            <ul>
+              <li>再缩进
+                <ul><li>三级嵌套</li></ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="callout tip">
+    <span class="callout-icon">💡</span>
+    <div>推荐统一用 <code>-</code> 做无序列表标记，风格统一。嵌套时子项缩进 <strong>2 或 4 个空格</strong>。</div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">有序列表</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>1. 第一步
+2. 第二步
+3. 第三步
+
+1. 其实可以
+1. 全部写 1
+1. 渲染会自动递增</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <ol>
+          <li>第一步</li>
+          <li>第二步</li>
+          <li>第三步</li>
+        </ol>
+        <ol>
+          <li>其实可以</li>
+          <li>全部写 1</li>
+          <li>渲染会自动递增</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <span class="callout-icon">💡</span>
+    <div>强烈推荐全部写 <code>1.</code>！这样插入、删除、重排项目时不用手动改编号，维护成本为零。</div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">✅ 任务列表（GFM）</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>- [ ] 未完成的任务
+- [x] 已完成的任务
+- [ ] 买咖啡
+  - [x] 找到咖啡店
+  - [ ] 排队</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <ul style="list-style:none;padding-left:0;">
+          <li><input type="checkbox" disabled> 未完成的任务</li>
+          <li><input type="checkbox" disabled checked> 已完成的任务</li>
+          <li><input type="checkbox" disabled> 买咖啡
+            <ul style="list-style:none;padding-left:20px;">
+              <li><input type="checkbox" disabled checked> 找到咖啡店</li>
+              <li><input type="checkbox" disabled> 排队</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div>GitHub Issues 和 PR 模板中用得非常多。在 GitHub 上点击 checkbox 会自动切换状态并提交。</div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">混合列表 & 列表中的段落</span>
+    <span class="badge badge-blue">技巧</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>1. 第一步：安装依赖
+
+   ```bash
+   npm install
+   ```
+
+2. 第二步：启动项目
+
+   这会启动开发服务器，
+   默认在 3000 端口。
+
+   > 💡 确保 Node.js 版本 ≥ 18</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <ol>
+          <li><p>第一步：安装依赖</p><pre style="background:#1e293b;"><code style="color:#e2e8f0;">npm install</code></pre></li>
+          <li><p>第二步：启动项目</p><p>这会启动开发服务器，默认在 3000 端口。</p><blockquote style="border-left-color:#7c3aed;">💡 确保 Node.js 版本 ≥ 18</blockquote></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <span class="callout-icon">💡</span>
+    <div>列表中嵌入代码块、引用块时，要<strong>缩进对齐</strong>（通常是 3 个空格，对齐到列表内容开始位置）。</div>
+  </div>
+</div>
+
 </div>
 </main>
 </body>
