@@ -1082,6 +1082,328 @@ flowchart LR
   </table>
 </div>
 
+
+<!-- ===== SECTION 6: 远程协作篇 ===== -->
+<h2 id="s6">6. ☁️ 远程协作篇</h2>
+<blockquote class="warning">🟡 <span class="badge badge-yellow">安全等级：注意</span> — 涉及与外部仓库交互，push --force 等操作需谨慎。</blockquote>
+
+<!-- git remote -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git remote</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+      <span class="badge badge-green">安全</span>
+    </span>
+  </div>
+  <div class="formula">
+    git remote -v &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 查看所有远程仓库的 URL<br>
+    git remote add &lt;name&gt; &lt;url&gt; &emsp;&emsp;&ensp;# 添加远程仓库<br>
+    git remote remove &lt;name&gt; &emsp;&emsp;&emsp;&ensp;# 移除远程仓库<br>
+    git remote rename &lt;old&gt; &lt;new&gt; &emsp;# 重命名<br>
+    git remote show &lt;name&gt; &emsp;&emsp;&emsp;&emsp;&ensp;# 查看某个远程的详细信息<br>
+    git remote prune &lt;name&gt; &emsp;&emsp;&emsp;&ensp;# 清理远程已删除分支的本地引用
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 管理"远程仓库"这个地址簿——告诉本地 Git 远程服务器在哪。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>查看远程地址</strong></td><td><code>git remote -v</code></td><td>显示 fetch 和 push 的 URL</td></tr>
+      <tr><td><strong>关联远程仓库</strong></td><td><code>git remote add origin &lt;URL&gt;</code></td><td>origin 是约定俗成的名字</td></tr>
+      <tr><td>添加上游仓库</td><td><code>git remote add upstream &lt;URL&gt;</code></td><td>Fork 工作流：origin 是你的 fork，upstream 是源仓库</td></tr>
+      <tr><td>修改 URL</td><td><code>git remote set-url origin &lt;新URL&gt;</code></td><td>仓库搬家后更新地址</td></tr>
+      <tr><td>删除远程关联</td><td><code>git remote remove origin</code></td><td>解除关联</td></tr>
+      <tr><td>查看详情</td><td><code>git remote show origin</code></td><td>显示所有远程分支、跟踪关系</td></tr>
+      <tr><td>清理死分支引用</td><td><code>git remote prune origin</code></td><td>远程分支已删除但本地 <code>origin/xxx</code> 残留，用这个清理</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- git fetch -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git fetch</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+      <span class="badge badge-blue">只读</span>
+    </span>
+  </div>
+  <div class="formula">
+    git fetch &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# 从默认远程（origin）下载所有分支的更新<br>
+    git fetch &lt;remote&gt; &emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 从指定远程下载<br>
+    git fetch &lt;remote&gt; &lt;branch&gt; &ensp;# 只下载指定分支<br>
+    git fetch --prune &emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 下载并清理远程已删除的分支引用<br>
+    git fetch --all &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 从所有远程下载
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 去远程"看看有什么新东西"，下载到本地但不合并——只更新 <code>origin/main</code> 这样的远程跟踪分支。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>获取所有更新</td><td><code>git fetch</code></td><td>下载 origin 上所有分支的新提交</td></tr>
+      <tr><td>获取后看看有啥</td><td><code>git fetch && git log origin/main</code></td><td>看远程 main 多了什么</td></tr>
+      <tr><td>只取一个分支</td><td><code>git fetch origin main</code></td><td>只拉 main 分支的最新</td></tr>
+      <tr><td>清理死引用</td><td><code>git fetch --prune</code></td><td>同时删除远程已经不存在的分支引用</td></tr>
+    </tbody>
+  </table>
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div><strong>fetch vs pull</strong>：<code>fetch</code> 是安全的"只看不摸"，<code>pull</code> = <code>fetch</code> + <code>merge</code>。推荐先用 <code>fetch</code> 看看远程有什么变化，再决定怎么合并。</div>
+  </div>
+</div>
+
+<!-- git pull -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git pull</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+      <span class="badge badge-yellow">注意</span>
+    </span>
+  </div>
+  <div class="formula">
+    git pull &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# = fetch + merge（默认行为）<br>
+    git pull --rebase &emsp;&emsp;&emsp;&emsp;&ensp;# = fetch + rebase（推荐！）<br>
+    git pull --ff-only &emsp;&emsp;&emsp;&emsp;&ensp;# 只允许快进合并，否则报错（最安全）<br>
+    git pull origin main &emsp;&emsp;&emsp;# 指定远程和分支
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 把远程更新拉下来并合并到本地当前分支。<code>fetch</code> + <code>merge/rebase</code> 的二合一操作。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>标准拉取</td><td><code>git pull</code></td><td>拉取跟踪分支的最新并合并</td></tr>
+      <tr><td><strong>推荐：变基拉取</strong></td><td><code>git pull --rebase</code></td><td>把你的本地提交 rebase 到远程最新提交之后，保持线性历史</td></tr>
+      <tr><td>全局设默认 rebase</td><td><code>git config --global pull.rebase true</code></td><td>设完后 <code>git pull</code> 就等于 <code>git pull --rebase</code></td></tr>
+      <tr><td>最安全拉取</td><td><code>git pull --ff-only</code></td><td>只能在快进时合并，有分叉就报错让你手动处理</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- git push -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git push</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+      <span class="badge badge-red">危险操作含 --force</span>
+    </span>
+  </div>
+  <div class="formula">
+    git push &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 推送当前分支到默认远程<br>
+    git push -u origin &lt;branch&gt; &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 首次推送，建立跟踪关系<br>
+    git push origin &lt;branch&gt; &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# 推送到指定远程的指定分支<br>
+    git push origin --delete &lt;branch&gt; &emsp;&emsp;&emsp;# 删除远程分支<br>
+    git push origin &lt;tag&gt; &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 推送一个标签<br>
+    git push origin --tags &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# 推送所有标签<br>
+    git push --force &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 🔴 强制推送（危险！）<br>
+    git push --force-with-lease &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# 🟡 更安全的强制推送
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 把本地仓库的提交"上传"到远程仓库，让团队其他人能看到。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>首次推送+关联</strong></td><td><code>git push -u origin main</code></td><td><code>-u</code> 建立追踪，之后只需 <code>git push</code></td></tr>
+      <tr><td>日常推送</td><td><code>git push</code></td><td>推送当前分支到已关联的远程分支</td></tr>
+      <tr><td>推送指定分支</td><td><code>git push origin feature-x</code></td><td>把 feature-x 推送到远程</td></tr>
+      <tr><td><strong>删除远程分支</strong></td><td><code>git push origin --delete feature-x</code></td><td>远程的分支被删除</td></tr>
+      <tr><td>推送标签</td><td><code>git push origin v1.0.0</code></td><td>推送指定标签</td></tr>
+      <tr><td>推送所有标签</td><td><code>git push origin --tags</code></td><td>把所有本地标签推上去</td></tr>
+      <tr><td>强制推送（审慎）</td><td><code>git push --force-with-lease</code></td><td>比 <code>--force</code> 安全：如果远程有新提交会拒绝推送</td></tr>
+      <tr><td>裸强制推送</td><td><code>git push --force</code></td><td>🔴 直接覆盖远程历史，非常危险</td></tr>
+    </tbody>
+  </table>
+  <div class="callout danger">
+    <span class="callout-icon">⚠️</span>
+    <div><strong><code>--force</code> vs <code>--force-with-lease</code></strong>：<br>
+    · <code>--force</code>：不管三七二十一，用你的历史覆盖远程 — <strong>非常危险</strong>！<br>
+    · <code>--force-with-lease</code>：先检查远程有没有你不知道的新提交。如果有，拒绝覆盖 — <strong>相对安全</strong>。<br><br>
+    永远优先用 <code>--force-with-lease</code>。只在 100% 确定要覆盖时用 <code>--force</code>。</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 7: 历史查看篇 ===== -->
+<h2 id="s7">7. 🔍 历史查看篇</h2>
+<blockquote class="tip">🟢 <span class="badge badge-green">安全等级：安全</span> — 全是只读操作，随便用。</blockquote>
+
+<!-- git log -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git log</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+      <span class="badge badge-blue">只读</span>
+    </span>
+  </div>
+  <div class="formula">
+    git log &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# 查看提交历史（完整版）<br>
+    git log --oneline &emsp;&emsp;&emsp;&emsp;&emsp;# 一行一个提交（最实用）<br>
+    git log --oneline --graph --all &emsp;# 图形化所有分支历史<br>
+    git log --author="name" &emsp;&emsp;&emsp;# 按作者过滤<br>
+    git log --since="2025-01-01" &emsp;# 按日期过滤<br>
+    git log -- &lt;file&gt; &emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 只看某文件的提交历史<br>
+    git log -p &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# 显示每次提交的详细 diff<br>
+    git log --stat &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 显示每次提交的文件统计<br>
+    git log -n 5 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# 只看最近 5 条
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: Git 历史是时光机，<code>log</code> 是操作这台时光机的仪表盘。</p>
+
+  <h4>🔥 推荐组合：图形化历史</h4>
+  <pre><code>git log --oneline --graph --decorate --all
+# 或者设置别名：
+git config --global alias.lg "log --oneline --graph --decorate --all"
+git lg   # 一行出图！</code></pre>
+  <pre><code>* a1b2c3d (HEAD -> feature, origin/feature) feat: add login
+* e4f5g6h (origin/main, main) docs: update readme
+* i7j8k9l Initial commit</code></pre>
+
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>图形化全览</strong></td><td><code>git log --oneline --graph --all</code></td><td>一张图看清所有分支的来龙去脉</td></tr>
+      <tr><td>看某人的提交</td><td><code>git log --author="张三"</code></td><td>支持模糊匹配</td></tr>
+      <tr><td>看今天的提交</td><td><code>git log --since="today"</code></td><td>也可以 <code>--since="2025-07-01"</code></td></tr>
+      <tr><td>看最近 N 条</td><td><code>git log -5</code></td><td>只看最近 5 条</td></tr>
+      <tr><td>看文件的修改历史</td><td><code>git log -p -- &lt;file&gt;</code></td><td>带 diff 的详细历史</td></tr>
+      <tr><td>看文件改了啥</td><td><code>git log --stat</code></td><td>统计每次提交改了多少行</td></tr>
+      <tr><td>搜索提交消息</td><td><code>git log --grep="bug"</code></td><td>在提交消息里搜关键词</td></tr>
+      <tr><td>搜索代码变更</td><td><code>git log -S "function login"</code></td><td>找出引入或删除某段代码的提交</td></tr>
+      <tr><td>两个分支的差异提交</td><td><code>git log main..feature</code></td><td>feature 有但 main 没有的提交</td></tr>
+    </tbody>
+  </table>
+
+  <h4>常用 <code>--pretty=format:</code> 占位符</h4>
+  <table>
+    <thead><tr><th>占位符</th><th>含义</th><th>占位符</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td><code>%H</code></td><td>完整 commit SHA</td><td><code>%an</code></td><td>作者名</td></tr>
+      <tr><td><code>%h</code></td><td>缩写 commit SHA</td><td><code>%ae</code></td><td>作者邮箱</td></tr>
+      <tr><td><code>%s</code></td><td>提交标题</td><td><code>%ar</code></td><td>相对时间（3 days ago）</td></tr>
+      <tr><td><code>%d</code></td><td>分支/标签引用</td><td><code>%ad</code></td><td>绝对日期</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- git show -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git show</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+      <span class="badge badge-blue">只读</span>
+    </span>
+  </div>
+  <div class="formula">
+    git show &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# 查看最新提交的详细信息<br>
+    git show &lt;commit-sha&gt; &emsp;&emsp;&ensp;# 查看指定提交<br>
+    git show --stat &lt;sha&gt; &emsp;&emsp;&ensp;# 只看文件统计<br>
+    git show &lt;sha&gt;:&lt;file&gt; &emsp;&ensp;# 看某个提交中某个文件的内容
+  </div>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>最新提交</td><td><code>git show</code></td><td>显示最新提交的消息 + diff</td></tr>
+      <tr><td>指定提交</td><td><code>git show abc123</code></td><td>这个提交改了啥</td></tr>
+      <tr><td>看某文件的旧版本</td><td><code>git show HEAD~3:src/app.ts</code></td><td>3 次提交前 app.ts 长什么样</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- git blame -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git blame</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+      <span class="badge badge-blue">只读</span>
+    </span>
+  </div>
+  <div class="formula">
+    git blame &lt;file&gt; &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 显示每一行是谁在哪个提交改的<br>
+    git blame -L 10,20 &lt;file&gt; &emsp;&ensp;# 只看第 10 到 20 行<br>
+    git blame -L /pattern/ &lt;file&gt; # 从匹配 pattern 的行开始
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: "这行代码是谁写的？什么时候？哪个提交？"——<code>blame</code> 全部告诉你。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>全文件追溯</td><td><code>git blame src/app.ts</code></td><td>每行显示 SHA、作者、时间</td></tr>
+      <tr><td>指定行范围</td><td><code>git blame -L 50,100 src/app.ts</code></td><td>只看第 50-100 行</td></tr>
+    </tbody>
+  </table>
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div>VS Code 用户：安装 <strong>GitLens</strong> 插件，每行代码末尾自动显示 blame 信息，无需手动打命令。</div>
+  </div>
+</div>
+
+<!-- git bisect -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git bisect</span>
+    <span class="badges-row">
+      <span class="badge badge-yellow">进阶</span>
+      <span class="badge badge-blue">只读</span>
+    </span>
+  </div>
+  <div class="formula">
+    git bisect start &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 开始二分查找<br>
+    git bisect bad [&lt;commit&gt;] &emsp;&emsp;&emsp;&ensp;# 标记当前提交是有问题的<br>
+    git bisect good [&lt;commit&gt;] &emsp;&emsp;&ensp;# 标记当前提交是好的<br>
+    git bisect reset &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 结束二分查找<br>
+    git bisect run &lt;测试脚本&gt; &emsp;&emsp;# 自动化二分
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 已知某版本正常、某版本出 Bug，让 Git 用二分法帮你自动定位到引入 Bug 的那个提交。</p>
+
+  <div class="mermaid">
+flowchart LR
+    subgraph "二分查找过程"
+        direction LR
+        G["✅ good<br/>v1.0"] --> C1["❓ 测试"] --> C2["❓ 测试"] --> B["🔴 bad<br/>HEAD"]
+    end
+  </div>
+
+  <pre><code># 手动二分示例
+git bisect start
+git bisect bad HEAD          # 最新版本有问题
+git bisect good v1.0.0       # v1.0.0 是好的
+# Git 自动切到中间某个提交...
+# 测试后告诉 Git：
+git bisect good              # 或 git bisect bad
+# 重复直到找到首个 bad 提交
+git bisect reset
+
+# 自动化二分示例
+git bisect start HEAD v1.0.0
+git bisect run npm test
+git bisect reset</code></pre>
+</div>
+
+<!-- git grep -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git grep</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+      <span class="badge badge-blue">只读</span>
+    </span>
+  </div>
+  <div class="formula">
+    git grep "pattern" &emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 在 Git 跟踪的文件中搜索<br>
+    git grep -n "pattern" &emsp;&emsp;&emsp;&ensp;# 显示行号<br>
+    git grep -c "pattern" &emsp;&emsp;&emsp;&ensp;# 只显示匹配数量<br>
+    git grep "pattern" &lt;commit&gt; &ensp;# 在某个版本中搜索
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 比系统 <code>grep</code> 更快（只搜 Git 跟踪的文件，忽略 node_modules 等）。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>搜索代码</td><td><code>git grep "function login"</code></td><td>在所有跟踪文件中搜索</td></tr>
+      <tr><td>含行号</td><td><code>git grep -n "TODO"</code></td><td>列出所有 TODO 注释的位置</td></tr>
+      <tr><td>统计数量</td><td><code>git grep -c "import.*from"</code></td><td>每个文件各有多少行 import</td></tr>
+      <tr><td>历史版本</td><td><code>git grep "oldFunc" v1.0.0</code></td><td>v1.0.0 版本中有没有 oldFunc</td></tr>
+    </tbody>
+  </table>
+</div>
+
 </div>
 </main>
 </body>
