@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git 命令对照说明书</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #f5f5f0;
+  color: #333;
+  line-height: 1.75;
+  display: flex;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  color: #ccc; overflow-y: auto; z-index: 100;
+  padding: 24px 0; font-size: 0.9rem;
+  box-shadow: 2px 0 20px rgba(0,0,0,0.15);
+}
+.sidebar-header {
+  text-align: center; padding: 0 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px;
+}
+.sidebar-header h2 {
+  color: #fff; font-size: 1.15rem; margin-top: 8px;
+}
+.sidebar-header .git-icon {
+  width: 48px; height: 48px; background: #F05032; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 28px; color: #fff; font-weight: bold;
+}
+.sidebar-nav { padding: 0 12px; }
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 8px; color: #b0b0c0;
+  text-decoration: none; transition: all 0.2s;
+  margin-bottom: 2px;
+}
+.sidebar-nav a:hover, .sidebar-nav a.active {
+  background: rgba(255,255,255,0.08); color: #fff;
+}
+.sidebar-nav a .nav-emoji { font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0; }
+.sidebar-nav a .nav-num { font-size: 0.7rem; color: #F05032; font-weight: 700; width: 20px; flex-shrink: 0; }
+.sidebar-nav .nav-section { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 16px 12px 6px; }
+.sidebar-footer {
+  text-align: center; padding: 20px; color: #666; font-size: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.08); margin-top: 20px;
+}
+
+/* ===== Main Content ===== */
+.main { margin-left: 280px; flex: 1; min-height: 100vh; }
+
+/* ===== Hero ===== */
+.hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d1b3d 40%, #F05032 100%);
+  color: #fff; padding: 60px 48px 48px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero h1 { font-size: 2.8rem; font-weight: 800; position: relative; }
+.hero .subtitle { font-size: 1.15rem; opacity: 0.85; margin-top: 12px; position: relative; }
+.hero .badges { margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; }
+.hero .badges img { height: 22px; }
+
+/* ===== Content Container ===== */
+.content { max-width: 900px; margin: 0 auto; padding: 40px 48px 60px; }
+
+/* ===== Typography ===== */
+h2 {
+  font-size: 1.8rem; color: #1a1a2e; margin: 48px 0 20px;
+  padding-bottom: 10px; border-bottom: 3px solid #F05032;
+  display: flex; align-items: center; gap: 10px;
+}
+h3 { font-size: 1.3rem; color: #2d1b3d; margin: 32px 0 14px; }
+h4 { font-size: 1.05rem; color: #555; margin: 20px 0 8px; }
+p { margin: 12px 0; }
+a { color: #F05032; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code {
+  background: #fff; border: 1px solid #e0e0d8; border-radius: 4px;
+  padding: 2px 6px; font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.88em; color: #d63384;
+}
+pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 10px;
+  padding: 20px 24px; overflow-x: auto; margin: 16px 0;
+  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.88rem; line-height: 1.6;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+
+/* ===== Tables ===== */
+table {
+  width: 100%; border-collapse: collapse; margin: 16px 0;
+  border-radius: 8px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+thead { background: #1a1a2e; color: #fff; }
+th {
+  padding: 10px 14px; text-align: left; font-weight: 600;
+  font-size: 0.9rem;
+}
+td { padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+tbody tr { background: #fff; transition: background 0.15s; }
+tbody tr:hover { background: #fef5f3; }
+tbody tr:nth-child(even) { background: #fafaf7; }
+tbody tr:nth-child(even):hover { background: #fef5f3; }
+
+/* ===== Blockquotes / Callouts ===== */
+blockquote {
+  border-left: 4px solid #F05032; background: #fff;
+  margin: 16px 0; padding: 14px 20px; border-radius: 0 8px 8px 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+blockquote p { margin: 4px 0; }
+blockquote.tip { border-left-color: #2da44e; }
+blockquote.warning { border-left-color: #bf8700; }
+blockquote.danger { border-left-color: #cf222e; }
+blockquote.info { border-left-color: #0969da; }
+
+.callout {
+  padding: 16px 20px; margin: 16px 0; border-radius: 10px;
+  display: flex; gap: 10px; align-items: flex-start;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.callout .callout-icon { font-size: 1.3rem; flex-shrink: 0; }
+.callout.note { background: #ddf4ff; border: 1px solid #b3dfff; }
+.callout.warn { background: #fff8e1; border: 1px solid #ffe082; }
+.callout.danger { background: #ffebee; border: 1px solid #ef9a9a; }
+.callout.success { background: #e8f5e9; border: 1px solid #a5d6a7; }
+
+/* ===== Mermaid ===== */
+.mermaid {
+  background: #fafaf7; border-radius: 10px; padding: 24px;
+  margin: 20px 0; text-align: center;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  overflow-x: auto;
+}
+
+/* ===== Badge tags ===== */
+.badge {
+  display: inline-block; padding: 2px 10px; border-radius: 12px;
+  font-size: 0.78rem; font-weight: 600; color: #fff;
+}
+.badge-green { background: #2da44e; }
+.badge-yellow { background: #bf8700; }
+.badge-red { background: #cf222e; }
+.badge-purple { background: #8250df; }
+.badge-blue { background: #0969da; }
+
+/* ===== Command Card ===== */
+.cmd-card {
+  background: #fff; border-radius: 12px; padding: 24px; margin: 24px 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #eee;
+  transition: box-shadow 0.2s;
+}
+.cmd-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.cmd-card .cmd-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.cmd-card .cmd-name {
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 1.25rem; font-weight: 700; color: #1a1a2e;
+  background: #f5f5f0; padding: 4px 12px; border-radius: 6px;
+}
+.cmd-card .cmd-header .badges-row { display: flex; gap: 6px; }
+.cmd-card .formula {
+  background: #fafaf7; border-left: 3px solid #F05032;
+  padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0;
+  font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.9rem;
+}
+.cmd-card .one-liner { color: #666; font-style: italic; margin-bottom: 16px; }
+
+/* ===== Divider ===== */
+hr { border: none; border-top: 1px solid #e0e0d8; margin: 32px 0; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .hero { padding: 40px 24px; }
+  .hero h1 { font-size: 1.8rem; }
+  .content { padding: 24px 20px; }
+}
+</style>
+<script>
+mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'loose',
+  themeVariables: {
+    primaryColor: '#fff3cd', primaryBorderColor: '#ffc107',
+    secondaryColor: '#d1ecf1', secondaryBorderColor: '#17a2b8',
+    tertiaryColor: '#d4edda', tertiaryBorderColor: '#28a745',
+    lineColor: '#666', textColor: '#333',
+    fontSize: '14px'
+  }
+});
+</script>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="git-icon">&lt;/&gt;</div>
+    <h2>Git 说明书</h2>
+    <p style="color:#888;font-size:0.8rem;">命令对照手册</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">📖 正文</div>
+    <a href="#s0"><span class="nav-num">0</span>阅读导航</a>
+    <a href="#s1"><span class="nav-num">1</span>核心概念速览</a>
+    <a href="#s2"><span class="nav-num">2</span>基础配置篇</a>
+    <a href="#s3"><span class="nav-num">3</span>仓库操作篇</a>
+    <a href="#s4"><span class="nav-num">4</span>基本快照篇</a>
+    <a href="#s5"><span class="nav-num">5</span>分支与合并篇</a>
+    <a href="#s6"><span class="nav-num">6</span>远程协作篇</a>
+    <a href="#s7"><span class="nav-num">7</span>历史查看篇</a>
+    <a href="#s8"><span class="nav-num">8</span>标签管理篇</a>
+    <a href="#s9"><span class="nav-num">9</span>撤销与回退篇</a>
+    <a href="#s10"><span class="nav-num">10</span>高级篇</a>
+    <a href="#s11"><span class="nav-num">11</span>实用工作流</a>
+    <div class="nav-section">📎 附录</div>
+    <a href="#sa"><span class="nav-num">A</span>命令速查表</a>
+    <a href="#sb"><span class="nav-num">B</span>推荐别名</a>
+    <a href="#sc"><span class="nav-num">C</span>术语中英对照</a>
+  </nav>
+  <div class="sidebar-footer">Made with ❤️<br>持续更新中</div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+<!-- Hero -->
+<section class="hero">
+  <h1>📖 Git 命令对照说明书</h1>
+  <p class="subtitle">一份颜值与内容并重的 Git 速查手册&emsp;——&emsp;像翻电子笔记一样学 Git</p>
+  <div class="badges">
+    <img src="https://img.shields.io/badge/Git-Instruction%20Manual-F05032?style=for-the-badge&logo=git&logoColor=white" alt="Git Manual">
+    <img src="https://img.shields.io/badge/版本-2.45+-blue?style=flat-square" alt="version">
+    <img src="https://img.shields.io/badge/语言-中文-brightgreen?style=flat-square" alt="lang">
+    <img src="https://img.shields.io/badge/更新-2025--07--09-orange?style=flat-square" alt="date">
+  </div>
+</section>
+
+<div class="content">
+
+<!-- ===== SECTION 0: 阅读导航 ===== -->
+<h2 id="s0">🧭 阅读导航</h2>
+
+<h3>📑 完整目录</h3>
+<ol>
+  <li><a href="#s1">🗺️ 核心概念速览</a> — 三区模型 · 文件生命周期</li>
+  <li><a href="#s2">⚙️ 基础配置篇</a> — <code>config</code> · <code>help</code></li>
+  <li><a href="#s3">🏗️ 仓库操作篇</a> — <code>init</code> · <code>clone</code> · <code>.gitignore</code></li>
+  <li><a href="#s4">📸 基本快照篇</a> — <code>add</code> · <code>commit</code> · <code>status</code> · <code>diff</code> · <code>restore</code></li>
+  <li><a href="#s5">🌿 分支与合并篇</a> — <code>branch</code> · <code>switch</code> · <code>merge</code> · <code>rebase</code> · <code>stash</code></li>
+  <li><a href="#s6">☁️ 远程协作篇</a> — <code>remote</code> · <code>fetch</code> · <code>pull</code> · <code>push</code></li>
+  <li><a href="#s7">🔍 历史查看篇</a> — <code>log</code> · <code>show</code> · <code>blame</code> · <code>bisect</code></li>
+  <li><a href="#s8">🏷️ 标签管理篇</a> — <code>tag</code></li>
+  <li><a href="#s9">↩️ 撤销与回退篇</a> — <code>reset</code> · <code>revert</code> · <code>clean</code> · <code>reflog</code></li>
+  <li><a href="#s10">🚀 高级篇</a> — <code>submodule</code> · <code>worktree</code> · <code>archive</code></li>
+  <li><a href="#s11">📋 实用工作流</a> — 日常开发 · Feature分支 · 紧急修复</li>
+</ol>
+<p><strong>附录</strong>：<a href="#sa">A. 命令速查表</a> · <a href="#sb">B. 推荐别名</a> · <a href="#sc">C. 术语中英对照</a></p>
+
+<h3>🎨 阅读指南</h3>
+<table>
+  <thead><tr><th>读者类型</th><th>推荐路径</th></tr></thead>
+  <tbody>
+    <tr><td>🆕 <strong>零基础新手</strong></td><td>从头顺序阅读，重点看第 1、2、3、4 章</td></tr>
+    <tr><td>📝 <strong>日常使用者</strong></td><td>直接跳到第 4、5、6 章作为案头速查</td></tr>
+    <tr><td>🔧 <strong>遇到问题找方案</strong></td><td>按目录关键词定位，比如"撤销"→ 第 9 章</td></tr>
+    <tr><td>🚀 <strong>进阶提升</strong></td><td>阅读第 7、10 章和附录 B</td></tr>
+  </tbody>
+</table>
+
+<h3>📌 图例说明</h3>
+<table>
+  <thead><tr><th>标识</th><th>含义</th></tr></thead>
+  <tbody>
+    <tr><td>🟢 <span class="badge badge-green">安全</span></td><td>只读或可逆操作，放心使用</td></tr>
+    <tr><td>🟡 <span class="badge badge-yellow">注意</span></td><td>需理解后再操作，有一定影响</td></tr>
+    <tr><td>🔴 <span class="badge badge-red">危险</span></td><td>不可逆或破坏性操作，谨慎使用</td></tr>
+    <tr><td>💡</td><td>实用技巧</td></tr>
+    <tr><td>⚠️</td><td>重要警告 / 常见陷阱</td></tr>
+    <tr><td>🎯</td><td>命令核心用途</td></tr>
+    <tr><td>📐</td><td>命令公式 / 语法</td></tr>
+    <tr><td>🎬</td><td>使用场景</td></tr>
+  </tbody>
+</table>
+
+</div>
+</main>
+</body>
+</html>
