@@ -676,6 +676,386 @@ X^2^（上标）
   </div>
 </div>
 
+
+<!-- ===== SECTION 5: 链接与图片 ===== -->
+<h2 id="s5">5. 🔗 链接与图片</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">行内链接 / 引用链接</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code># 行内链接
+[GitHub](https://github.com)
+
+# 带标题的链接（hover 显示）
+[GitHub](https://github.com "访问")
+
+# 引用式链接
+[GitHub][1]
+[Google][gg]
+
+# 自动链接（直接用 URL）
+https://github.com
+
+# 邮箱链接
+<email@example.com>
+
+[1]: https://github.com
+[gg]: https://google.com</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <p><a href="https://github.com">GitHub</a></p>
+        <p><a href="https://github.com" title="访问">GitHub</a></p>
+        <p><a href="https://github.com">GitHub</a> <a href="https://google.com">Google</a></p>
+        <p><a href="https://github.com">https://github.com</a></p>
+        <p><a href="mailto:email@example.com">email@example.com</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <span class="callout-icon">💡</span>
+    <div><strong>引用式链接最适合长文档</strong>：把所有 URL 集中在文末管理，正文保持清爽。修改 URL 时只需改一处。</div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">🖼️ 图片</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code># 行内图片
+![替代文字](image.png)
+
+# 带标题的图片
+![Logo](logo.png "网站Logo")
+
+# 引用式图片
+![截图][screenshot]
+
+# 可点击的图片（图片+链接）
+[![GitHub](icon.png)](https://github.com)
+
+# HTML 控制大小
+<img src="photo.jpg" width="300">
+
+[screenshot]: screenshot.png</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <p>🖼️ 替代文字（图片无法加载时显示）</p>
+        <p>🖼️ Logo（hover 显示"网站Logo"）</p>
+        <p>🖼️ 可点击的图片链接</p>
+        <p>用 HTML 控制尺寸</p>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>语法</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td><code>![alt](url)</code></td><td>alt：图片无法显示时的替代文字（必填但可空）</td></tr>
+      <tr><td><code>![alt](url "title")</code></td><td>title：鼠标悬停时的提示文字（可选）</td></tr>
+      <tr><td><code>[![alt](img)](link)</code></td><td>图片套链接：用户点击图片跳转</td></tr>
+      <tr><td><code>&lt;img width="300"&gt;</code></td><td>Markdown 不支持图片尺寸，用 HTML 代替</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div>标准 Markdown <strong>无法控制图片大小和对齐</strong>。需要精确控制时，直接用 HTML <code>&lt;img&gt;</code> 标签。</div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">锚点链接（页内跳转）</span>
+    <span class="badge badge-blue">技巧</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code># 自动生成锚点
+[跳转到第三章](#3-文本格式化)
+
+# 手动设置锚点（用 HTML）
+<h2 id="custom-id">自定义锚点</h2>
+[跳转](#custom-id)
+
+# GitHub 自动锚点规则：
+# 空格→-  大写→小写  特殊符号→删除</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 说明</div>
+      <div class="demo-content md-preview">
+        <p>标题 <code>## hello world!</code></p>
+        <p>→ 锚点 ID = <code>hello-world</code></p>
+        <p>→ 链接写法：<code>[跳转](#hello-world)</code></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 6: 代码 ===== -->
+<h2 id="s6">6. 💻 代码</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">行内代码</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+  <p>用单个反引号 <code>`</code> 包裹，用于在句子中引用变量名、命令、文件路径等。</p>
+  <pre><code>请使用 `git status` 查看状态。文件在 `src/utils/helper.ts` 中。</code></pre>
+  <div class="md-preview"><p>请使用 <code>git status</code> 查看状态。文件在 <code>src/utils/helper.ts</code> 中。</p></div>
+
+  <div class="callout tip">
+    <span class="callout-icon">💡</span>
+    <div>如果代码内包含反引号，用双反引号包裹：<code>`` `code` ``</code> → <code>`code`</code></div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">围栏代码块 + 语法高亮</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>```javascript
+function greet(name) {
+  // 这是一个注释
+  const msg = `Hello, ${name}!`;
+  console.log(msg);
+  return msg;
+}
+```</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果（带语法高亮）</div>
+      <div class="demo-content" style="background:#1e293b;border-radius:6px;padding:16px;">
+        <pre style="margin:0;box-shadow:none;background:none;"><code><span style="color:#c084fc;">function</span> <span style="color:#60a5fa;">greet</span>(<span style="color:#f9a8d4;">name</span>) {
+  <span style="color:#94a3b8;">// 这是一个注释</span>
+  <span style="color:#c084fc;">const</span> msg = <span style="color:#34d399;">`Hello, ${name}!`</span>;
+  <span style="color:#67e8f9;">console</span>.<span style="color:#60a5fa;">log</span>(msg);
+  <span style="color:#c084fc;">return</span> msg;
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <h4>支持的语言标识（部分）</h4>
+  <table>
+    <thead><tr><th>标识</th><th>语言</th><th>标识</th><th>语言</th></tr></thead>
+    <tbody>
+      <tr><td><code>bash</code> / <code>sh</code></td><td>Shell 脚本</td><td><code>python</code> / <code>py</code></td><td>Python</td></tr>
+      <tr><td><code>javascript</code> / <code>js</code></td><td>JavaScript</td><td><code>typescript</code> / <code>ts</code></td><td>TypeScript</td></tr>
+      <tr><td><code>html</code></td><td>HTML</td><td><code>css</code></td><td>CSS</td></tr>
+      <tr><td><code>json</code></td><td>JSON</td><td><code>yaml</code> / <code>yml</code></td><td>YAML</td></tr>
+      <tr><td><code>sql</code></td><td>SQL</td><td><code>dockerfile</code></td><td>Dockerfile</td></tr>
+      <tr><td><code>markdown</code> / <code>md</code></td><td>Markdown</td><td><code>mermaid</code></td><td>Mermaid 图表</td></tr>
+      <tr><td><code>java</code></td><td>Java</td><td><code>rust</code></td><td>Rust</td></tr>
+      <tr><td><code>go</code></td><td>Go</td><td><code>cpp</code> / <code>c++</code></td><td>C++</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">Diff 代码块</span>
+    <span class="badge badge-blue">技巧</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>```diff
+  function hello() {
+-   console.log("old");
++   console.log("new");
+  }
+```</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content" style="background:#1e293b;border-radius:6px;padding:16px;">
+        <pre style="margin:0;box-shadow:none;background:none;font-family:monospace;"><code>  function hello() {
+<span style="color:#fca5a5;">-   console.log("old");</span>
+<span style="color:#86efac;">+   console.log("new");</span>
+  }</code></pre>
+      </div>
+    </div>
+  </div>
+  <p>在 PR 描述和代码审查中非常有用，清晰展示增删。</p>
+</div>
+
+<!-- ===== SECTION 7: 表格 ===== -->
+<h2 id="s7">7. 📊 表格</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">基本表格 + 对齐</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>| 左对齐 | 居中对齐 | 右对齐 |
+|:-------|:--------:|-------:|
+| 内容A  |   内容B  |   100  |
+| 长内容  |   短    |   200  |</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <table>
+          <thead><tr><th style="text-align:left">左对齐</th><th style="text-align:center">居中对齐</th><th style="text-align:right">右对齐</th></tr></thead>
+          <tbody>
+            <tr><td style="text-align:left">内容A</td><td style="text-align:center">内容B</td><td style="text-align:right">100</td></tr>
+            <tr><td style="text-align:left">长内容</td><td style="text-align:center">短</td><td style="text-align:right">200</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>分隔行写法</th><th>对齐方式</th></tr></thead>
+    <tbody>
+      <tr><td><code>|:------|</code></td><td>左对齐（默认）</td></tr>
+      <tr><td><code>|:-----:|</code></td><td>居中对齐</td></tr>
+      <tr><td><code>|------:|</code></td><td>右对齐</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout tip">
+    <span class="callout-icon">💡</span>
+    <div>表格的列数可以不一致，少的列会自动补空。管道符 <code>|</code> 对齐不是必须的，但<strong>强烈建议对齐</strong>以提高源码可读性。</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 8: 引用与分隔 ===== -->
+<h2 id="s8">8. 💬 引用与分隔</h2>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">引用块（Blockquote）</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>> 这是单行引用。
+
+> 这是多行引用。
+> 第二行。
+>
+> 第三段。
+
+> 最外层
+>> 嵌套一层
+>>> 嵌套两层
+
+> 💡 结合 emoji 做提示框</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果</div>
+      <div class="demo-content md-preview">
+        <blockquote>这是单行引用。</blockquote>
+        <blockquote><p>这是多行引用。第二行。</p><p>第三段。</p></blockquote>
+        <blockquote>最外层<blockquote>嵌套一层<blockquote>嵌套两层</blockquote></blockquote></blockquote>
+        <blockquote>💡 结合 emoji 做提示框</blockquote>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">GFM 告示块（GitHub Alert）</span>
+    <span class="badge badge-blue">GFM 专属</span>
+  </div>
+
+  <div class="demo-grid">
+    <div class="demo-col">
+      <div class="demo-label">📝 Markdown 源码</div>
+      <div class="demo-content"><pre><code>> [!NOTE]
+> 实用信息，值得注意。
+
+> [!TIP]
+> 小贴士，帮你做得更好。
+
+> [!IMPORTANT]
+> 重要信息，不容错过。
+
+> [!WARNING]
+> 需要立即关注的警告。
+
+> [!CAUTION]
+> 可能产生负面后果的行动。</code></pre></div>
+    </div>
+    <div class="demo-col">
+      <div class="demo-label output">👁️ 渲染效果（GitHub 风格）</div>
+      <div class="demo-content md-preview">
+        <div style="border-left:4px solid #0969da;padding:8px 16px;margin:8px 0;background:#ddf4ff;border-radius:4px;"><strong>🛈 Note</strong><br>实用信息，值得注意。</div>
+        <div style="border-left:4px solid #1a7f37;padding:8px 16px;margin:8px 0;background:#dafbe1;border-radius:4px;"><strong>💡 Tip</strong><br>小贴士，帮你做得更好。</div>
+        <div style="border-left:4px solid #8250df;padding:8px 16px;margin:8px 0;background:#f3e8ff;border-radius:4px;"><strong>❗ Important</strong><br>重要信息，不容错过。</div>
+        <div style="border-left:4px solid #bf8700;padding:8px 16px;margin:8px 0;background:#fff8e1;border-radius:4px;"><strong>⚠️ Warning</strong><br>需要立即关注的警告。</div>
+        <div style="border-left:4px solid #cf222e;padding:8px 16px;margin:8px 0;background:#ffebee;border-radius:4px;"><strong>🔥 Caution</strong><br>可能产生负面后果的行动。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div>这是 GitHub 平台独有特性，在其他 Markdown 编辑器中可能不渲染。但即使不渲染，源码也非常可读。</div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="card-header">
+    <span class="card-title">分隔线 / 转义字符</span>
+    <span class="badge badge-green">基础</span>
+  </div>
+
+  <h4>分隔线（Horizontal Rule）</h4>
+  <p>三种写法都可以，三个以上的 <code>-</code>、<code>*</code> 或 <code>_</code>：</p>
+  <pre><code>---
+***
+___</code></pre>
+  <div class="md-preview"><hr></div>
+
+  <h4>转义字符</h4>
+  <p>用反斜杠 <code>\</code> 让 Markdown 符号失去特殊含义，原样显示：</p>
+  <table>
+    <thead><tr><th>写法</th><th>显示</th><th>场景</th></tr></thead>
+    <tbody>
+      <tr><td><code>\*不是斜体\*</code></td><td>*不是斜体*</td><td>星号字面量</td></tr>
+      <tr><td><code>\# 不是标题</code></td><td># 不是标题</td><td>井号字面量</td></tr>
+      <tr><td><code>\[不是链接\]</code></td><td>[不是链接]</td><td>方括号字面量</td></tr>
+      <tr><td><code>\`不是代码\`</code></td><td>`不是代码`</td><td>反引号字面量</td></tr>
+      <tr><td><code>\_不是斜体\_</code></td><td>_不是斜体_</td><td>下划线字面量</td></tr>
+    </tbody>
+  </table>
+  <p>需要转义的符号完整列表：<code>\ ` * _ { } [ ] ( ) # + - . ! | &lt; &gt;</code></p>
+</div>
+
 </div>
 </main>
 </body>
