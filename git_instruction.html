@@ -1404,6 +1404,487 @@ git bisect reset</code></pre>
   </table>
 </div>
 
+
+<!-- ===== SECTION 8: 标签管理篇 ===== -->
+<h2 id="s8">8. 🏷️ 标签管理篇</h2>
+<blockquote class="tip">🟢 <span class="badge badge-green">安全等级：安全</span> — 标签是只读锚点，标记发布版本。</blockquote>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git tag</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+      <span class="badge badge-green">安全</span>
+    </span>
+  </div>
+  <div class="formula">
+    git tag &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 列出所有标签<br>
+    git tag &lt;name&gt; &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 创建轻量标签（指向当前提交的指针）<br>
+    git tag -a &lt;name&gt; -m "描述" &emsp;&ensp;# 创建附注标签（含作者、日期、消息）<br>
+    git tag -a &lt;name&gt; &lt;commit&gt; -m "" &ensp;# 给历史提交打标签<br>
+    git push origin &lt;tag-name&gt; &emsp;&emsp;&ensp;# 推送一个标签<br>
+    git push origin --tags &emsp;&emsp;&emsp;&emsp;&ensp;# 推送所有标签<br>
+    git tag -d &lt;name&gt; &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 删除本地标签<br>
+    git push origin --delete &lt;name&gt; # 删除远程标签
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 给某个提交贴一个永久标签，通常用来标记发布版本号（v1.0.0, v2.3.1）。</p>
+
+  <h4>轻量标签 vs 附注标签</h4>
+  <table>
+    <thead><tr><th>类型</th><th>命令</th><th>特点</th></tr></thead>
+    <tbody>
+      <tr><td><strong>轻量标签</strong></td><td><code>git tag v1.0.0</code></td><td>只是一个指向提交的指针，不含额外信息</td></tr>
+      <tr><td><strong>附注标签</strong></td><td><code>git tag -a v1.0.0 -m "正式发布"</code></td><td>Git 完整对象：含作者、日期、消息，可通过 <code>git show</code> 查看</td></tr>
+    </tbody>
+  </table>
+
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>打轻量标签</td><td><code>git tag v1.0.0</code></td><td>在当前提交上打标签</td></tr>
+      <tr><td><strong>打附注标签（推荐）</strong></td><td><code>git tag -a v1.0.0 -m "首次正式发布"</code></td><td>含完整元信息</td></tr>
+      <tr><td>给历史提交打标签</td><td><code>git tag -a v0.9.0 abc123 -m "回溯标签"</code></td><td>给过去的提交补标签</td></tr>
+      <tr><td>推送指定标签</td><td><code>git push origin v1.0.0</code></td><td>标签默认不推送，需要显式推送</td></tr>
+      <tr><td>推送所有标签</td><td><code>git push origin --tags</code></td><td>把所有本地标签推上去</td></tr>
+      <tr><td>删除本地标签</td><td><code>git tag -d v1.0.0</code></td><td>删除本地标签</td></tr>
+      <tr><td>删除远程标签</td><td><code>git push origin --delete v1.0.0</code></td><td>删除远程标签</td></tr>
+    </tbody>
+  </table>
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div>发布版本用<strong>附注标签</strong>（<code>-a</code>），临时标记用轻量标签。</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 9: 撤销与回退篇 ===== -->
+<h2 id="s9">9. ↩️ 撤销与回退篇</h2>
+<blockquote class="danger">🔴 <span class="badge badge-red">安全等级：危险</span> — 有些操作不可逆，请仔细阅读每个警告。</blockquote>
+
+<!-- git reset -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git reset</span>
+    <span class="badges-row">
+      <span class="badge badge-yellow">进阶</span>
+      <span class="badge badge-red">危险</span>
+    </span>
+  </div>
+  <div class="formula">
+    git reset --soft &lt;commit&gt; &emsp;# 重置 HEAD，保留暂存区和工作区<br>
+    git reset --mixed &lt;commit&gt; # 重置 HEAD 和暂存区，保留工作区（默认）<br>
+    git reset --hard &lt;commit&gt; &emsp;# 🔴 重置一切：HEAD、暂存区、工作区全部覆盖<br>
+    git reset HEAD~1 &emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 撤销最近一次提交（mixed 模式）<br>
+    git reset &lt;file&gt; &emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 取消暂存指定文件
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 让 HEAD 指针"回退"到某个历史提交，三种模式控制回退多少。</p>
+
+  <h4>三种 reset 模式对比</h4>
+  <div class="mermaid">
+flowchart TB
+    subgraph S["--soft 软重置"]
+        S1["HEAD 移动 ✅"] --> S2["暂存区 不变 ✅"] --> S3["工作区 不变 ✅"]
+    end
+    subgraph M["--mixed 混合重置（默认）"]
+        M1["HEAD 移动 ✅"] --> M2["暂存区 清空 🔄"] --> M3["工作区 不变 ✅"]
+    end
+    subgraph H["--hard 硬重置 🔴"]
+        H1["HEAD 移动 ✅"] --> H2["暂存区 清空 🔄"] --> H3["工作区 清空 🔴"]
+    end
+  </div>
+
+  <table>
+    <thead><tr><th>模式</th><th>HEAD</th><th>暂存区</th><th>工作区</th><th>使用场景</th></tr></thead>
+    <tbody>
+      <tr><td><code>--soft</code></td><td>✅ 移动</td><td>✅ 保留</td><td>✅ 保留</td><td>撤销 commit 但保留所有改动，方便重新提交</td></tr>
+      <tr><td><code>--mixed</code></td><td>✅ 移动</td><td>🔄 重置</td><td>✅ 保留</td><td>撤销 commit 和 add，改动回到工作区</td></tr>
+      <tr><td><code>--hard</code></td><td>✅ 移动</td><td>🔄 重置</td><td>🔴 <strong>丢弃</strong></td><td>彻底放弃所有改动，回到干净状态</td></tr>
+    </tbody>
+  </table>
+
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>撤销提交（保留改动）</strong></td><td><code>git reset --soft HEAD~1</code></td><td>提交没了，改动在暂存区</td></tr>
+      <tr><td>撤销 commit + add</td><td><code>git reset HEAD~1</code></td><td>改动回到工作区</td></tr>
+      <tr><td><strong>彻底放弃一切</strong></td><td><code>git reset --hard HEAD</code></td><td>🔴 丢弃所有未提交的改动</td></tr>
+      <tr><td>回到 3 次提交前</td><td><code>git reset --hard HEAD~3</code></td><td>🔴 最近 3 次提交全部丢弃</td></tr>
+      <tr><td>取消暂存某文件</td><td><code>git reset &lt;file&gt;</code></td><td>等于 <code>git restore --staged &lt;file&gt;</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div><strong>救命的 <code>git reflog</code></strong>：即使 <code>git reset --hard</code> 把提交"弄丢了"，只要没执行 <code>git gc</code>，90 天内都可以通过 <code>reflog</code> 找回。</div>
+  </div>
+</div>
+
+<!-- git revert -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git revert</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+      <span class="badge badge-green">安全</span>
+    </span>
+  </div>
+  <div class="formula">
+    git revert &lt;commit-sha&gt; &emsp;&emsp;# 创建一个新提交来"反做"指定提交的改动<br>
+    git revert HEAD &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;# 反做最近一次提交<br>
+    git revert --no-commit &lt;sha&gt; # 不自动提交，改动放到工作区
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: "撤销但留记录"——创建一个新提交来抵消旧提交，历史不丢失。</p>
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div><strong>reset vs revert 如何选择？</strong><br>
+    · 撤销的提交<strong>只在本地</strong>，没 push → 用 <code>reset</code><br>
+    · 撤销的提交<strong>已经 push</strong> 到远程 → 用 <code>revert</code>（安全，不破坏公共历史）</div>
+  </div>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>撤销最近一次提交</td><td><code>git revert HEAD</code></td><td>创建一个反向提交</td></tr>
+      <tr><td>撤销指定提交</td><td><code>git revert abc123</code></td><td>抵消 abc123 的改动</td></tr>
+      <tr><td>暂不提交</td><td><code>git revert --no-commit abc123</code></td><td>审核改动后再手动提交</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- git reflog -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git reflog — 救命稻草</span>
+    <span class="badges-row">
+      <span class="badge badge-yellow">进阶</span>
+      <span class="badge badge-blue">只读</span>
+    </span>
+  </div>
+  <div class="formula">
+    git reflog &emsp;&emsp;&emsp;&emsp;&ensp;# 查看 HEAD 的移动历史<br>
+    git reflog &lt;branch&gt; &ensp;# 查看某分支的移动历史<br>
+    git reflog --all &emsp;&ensp;# 查看所有引用
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 记录了本地仓库中 HEAD 和分支指针的每一次移动——删掉的提交、reset 掉的改动，都能在这里找回来。</p>
+  <pre><code># 输出示例：
+abc1234 HEAD@{0}: commit: feat: add login
+def5678 HEAD@{1}: reset: moving to HEAD~1
+ghi9012 HEAD@{2}: commit: WIP: 重构了一半（被 reset 掉了！）</code></pre>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>查看 HEAD 移动史</td><td><code>git reflog</code></td><td>看到所有"曾经指向过"的提交</td></tr>
+      <tr><td>找回被 reset 的提交</td><td><code>git reset --hard HEAD@{2}</code></td><td>回到 reflog 记录的某个状态</td></tr>
+      <tr><td>找回被删分支</td><td><code>git checkout -b recovered HEAD@{5}</code></td><td>基于 reflog 记录创建分支找回</td></tr>
+    </tbody>
+  </table>
+  <pre><code># 典型急救流程
+git reflog                        # 找到被 reset 前的 HEAD@{n}
+git reset --hard HEAD@{3}         # 穿越回去！</code></pre>
+</div>
+
+<!-- git clean -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git clean</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+      <span class="badge badge-red">危险</span>
+    </span>
+  </div>
+  <div class="formula">
+    git clean -n &emsp;&ensp;# 预览：哪些未跟踪文件会被删除<br>
+    git clean -f &emsp;&ensp;# 删除未跟踪的文件<br>
+    git clean -fd &ensp;# 删除未跟踪的文件 + 目录<br>
+    git clean -fx &ensp;# 删除未跟踪文件 + 被 .gitignore 忽略的文件
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 清除工作区中所有没被 Git 跟踪的文件和文件夹。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>先看看会删什么</strong></td><td><code>git clean -n</code></td><td>🔍 预览模式，安全无害</td></tr>
+      <tr><td>删除未跟踪文件</td><td><code>git clean -f</code></td><td>删除未跟踪的文件（不含目录）</td></tr>
+      <tr><td>含目录一起删</td><td><code>git clean -fd</code></td><td>删除文件 + 空目录</td></tr>
+      <tr><td>含 ignored 文件</td><td><code>git clean -fx</code></td><td>连 <code>node_modules/</code> 等被忽略的一起删</td></tr>
+    </tbody>
+  </table>
+  <div class="callout danger">
+    <span class="callout-icon">⚠️</span>
+    <div><strong>永远先用 <code>-n</code> 预览！</strong><code>git clean -fd</code> 删除的内容无法恢复（不经过 Git，不进回收站）。</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 10: 高级篇 ===== -->
+<h2 id="s10">10. 🚀 高级篇</h2>
+<blockquote>🟣 <span class="badge badge-purple">进阶</span> — 不是每天用，但关键时刻能解决大问题。</blockquote>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git submodule</span>
+    <span class="badges-row">
+      <span class="badge badge-purple">进阶</span>
+    </span>
+  </div>
+  <div class="formula">
+    git submodule add &lt;url&gt; [path] &emsp;&emsp;&emsp;&emsp;&ensp;# 添加子模块<br>
+    git submodule update --init --recursive &emsp;# 初始化并更新所有子模块<br>
+    git submodule update --remote &emsp;&emsp;&emsp;&emsp;&emsp;# 拉取子模块的最新提交<br>
+    git clone --recurse-submodules &lt;url&gt; &ensp;# 克隆时一并初始化子模块
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 在一个 Git 仓库里嵌套另一个 Git 仓库——适合管理项目依赖的第三方库。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>添加子模块</td><td><code>git submodule add &lt;url&gt; libs/theme</code></td><td>嵌入 theme 库</td></tr>
+      <tr><td>克隆含子模块的仓库</td><td><code>git clone --recurse-submodules &lt;url&gt;</code></td><td>一次性克隆主仓库+子模块</td></tr>
+      <tr><td>更新子模块</td><td><code>git submodule update --remote</code></td><td>拉取子模块最新版本</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git worktree</span>
+    <span class="badges-row">
+      <span class="badge badge-purple">进阶</span>
+    </span>
+  </div>
+  <div class="formula">
+    git worktree add &lt;path&gt; &lt;branch&gt; &emsp;# 在另一个目录 checkout 一个分支<br>
+    git worktree list &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# 列出所有工作树<br>
+    git worktree remove &lt;path&gt; &emsp;&emsp;&emsp;# 删除工作树<br>
+    git worktree prune &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# 清理已删除工作树的记录
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>: 同一个仓库，同时 checkout 多个分支到不同目录——不用来回切换就能并行工作。</p>
+  <pre><code># 场景：main 分支在跑测试，你想同时开发新功能
+git worktree add ../project-hotfix hotfix
+cd ../project-hotfix    # 过去开发，不影响原目录的测试</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 git archive / git bundle</span>
+    <span class="badges-row">
+      <span class="badge badge-purple">进阶</span>
+    </span>
+  </div>
+  <div class="formula">
+    git archive --format=zip HEAD > project.zip &emsp;# 打包当前版本为 zip<br>
+    git archive -o latest.tar.gz HEAD &emsp;&emsp;&emsp;# 打包为 tar.gz<br>
+    git bundle create repo.bundle --all &emsp;&emsp;&ensp;# 创建完整仓库包（离线传输）<br>
+    git clone repo.bundle &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;# 从 bundle 克隆
+  </div>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td>导出源码包</td><td><code>git archive -o v1.0.zip v1.0.0</code></td><td>发布不带 .git 的源代码包</td></tr>
+      <tr><td>离线传输仓库</td><td><code>git bundle create my.bundle --all</code></td><td>生成单个文件，U 盘拷走</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== SECTION 11: 实用工作流 ===== -->
+<h2 id="s11">11. 📋 实用工作流</h2>
+
+<h3>11.1 日常开发流（单人/小团队）</h3>
+<div class="mermaid">
+flowchart TD
+    A["1️⃣ git pull --rebase"] --> B["2️⃣ 写代码..."]
+    B --> C["3️⃣ git status"]
+    C --> D["4️⃣ git add ."]
+    D --> E["5️⃣ git commit -m 'feat: ...'"]
+    E --> F["6️⃣ git pull --rebase"]
+    F -->|"有冲突"| G["解决冲突 → git add → git rebase --continue"]
+    F -->|"无冲突"| H["7️⃣ git push"]
+    G --> H
+</div>
+<pre><code># 标准日常流程（每次开始写代码前）
+git pull --rebase              # 同步远程最新
+# ... 写代码 ...
+git status                     # 看看改了啥
+git add .                      # 暂存所有
+git commit -m "feat: 描述"     # 提交
+git pull --rebase              # 推送前再同步一次
+git push                       # 推！</code></pre>
+
+<h3>11.2 Feature 分支流</h3>
+<pre><code># 开新功能
+git switch -c feature-payment          # 从 main 创建功能分支
+# ... 开发，多次提交 ...
+git add . && git commit -m "支付接入"
+
+# 期间 main 有更新，同步过来
+git switch main && git pull            # 先更新 main
+git switch feature-payment             # 切回功能分支
+git rebase main                        # 把功能分支 rebase 到最新 main
+
+# 开发完毕，合并回 main
+git switch main
+git merge --no-ff feature-payment      # --no-ff 保留分支轨迹
+git push origin main
+git branch -d feature-payment          # 清理已合并的分支</code></pre>
+
+<h3>11.3 紧急修复流（Hotfix）</h3>
+<pre><code># 正在 feature 分支上开发，突然要修线上 Bug
+git stash push -m "支付写到一半"        # 1. 暂存当前工作
+git switch main                         # 2. 切到 main
+git pull                                # 3. 同步最新
+git switch -c hotfix-critical-bug       # 4. 从 main 开修复分支
+# ... 修 Bug ...
+git add . && git commit -m "fix: 严重 Bug"
+git switch main && git merge --no-ff hotfix-critical-bug
+git push origin main                    # 5. 推送修复
+git switch feature-payment              # 6. 回到功能分支
+git rebase main                         # 7. 把修复同步过来
+git stash pop                           # 8. 恢复之前的进度</code></pre>
+
+<h3>11.4 合并 vs 变基选择指南</h3>
+<div class="mermaid">
+flowchart TD
+    Q["需要整合分支？"] --> A{"分支已经<br/>push 到远程？"}
+    A -->|"是（公共分支）"| M["✅ merge<br/>保留完整历史"]
+    A -->|"否（本地分支）"| R{"追求线性历史？"}
+    R -->|是| RB["✅ rebase<br/>历史像一条直线"]
+    R -->|否| M2["✅ merge<br/>保留分支轨迹"]
+</div>
+<blockquote class="tip">💡 <strong>简单口诀</strong>：公共分支用 merge，本地整理用 rebase。</blockquote>
+
+<!-- ===== 附录 ===== -->
+<h2 id="sa">附录 A：命令速查表</h2>
+<blockquote>一页纸浓缩，按使用频率排序。打印出来贴在显示器旁边。</blockquote>
+
+<h3>🔥 每天必用</h3>
+<table>
+  <thead><tr><th>命令</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><code>git status</code></td><td>当前状态一览</td></tr>
+    <tr><td><code>git add .</code></td><td>暂存所有改动</td></tr>
+    <tr><td><code>git commit -m "..."</code></td><td>提交</td></tr>
+    <tr><td><code>git pull --rebase</code></td><td>拉取并变基</td></tr>
+    <tr><td><code>git push</code></td><td>推送</td></tr>
+    <tr><td><code>git log --oneline -10</code></td><td>看最近 10 条记录</td></tr>
+  </tbody>
+</table>
+
+<h3>⚡ 常用</h3>
+<table>
+  <thead><tr><th>命令</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><code>git diff</code></td><td>工作区 vs 暂存区</td></tr>
+    <tr><td><code>git diff --staged</code></td><td>暂存区 vs HEAD</td></tr>
+    <tr><td><code>git restore &lt;file&gt;</code></td><td>撤销工作区修改</td></tr>
+    <tr><td><code>git restore --staged &lt;file&gt;</code></td><td>取消暂存</td></tr>
+    <tr><td><code>git switch -c &lt;name&gt;</code></td><td>创建并切换分支</td></tr>
+    <tr><td><code>git stash</code> / <code>git stash pop</code></td><td>暂存工作 / 恢复</td></tr>
+    <tr><td><code>git merge &lt;branch&gt;</code></td><td>合并分支</td></tr>
+    <tr><td><code>git log --oneline --graph --all</code></td><td>图形化全历史</td></tr>
+    <tr><td><code>git branch -d &lt;name&gt;</code></td><td>删除已合并分支</td></tr>
+  </tbody>
+</table>
+
+<h3>🛠️ 偶尔用但很关键</h3>
+<table>
+  <thead><tr><th>命令</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><code>git commit --amend</code></td><td>追加到上一次提交</td></tr>
+    <tr><td><code>git rebase -i HEAD~3</code></td><td>整理最近 3 次提交</td></tr>
+    <tr><td><code>git cherry-pick &lt;sha&gt;</code></td><td>复制一个提交</td></tr>
+    <tr><td><code>git reset --soft HEAD~1</code></td><td>撤销提交但保留改动</td></tr>
+    <tr><td><code>git revert &lt;sha&gt;</code></td><td>安全反做（已 push 的提交）</td></tr>
+    <tr><td><code>git reflog</code></td><td>找回丢失的提交</td></tr>
+    <tr><td><code>git bisect start</code></td><td>二分定位 Bug</td></tr>
+    <tr><td><code>git push --force-with-lease</code></td><td>安全强制推送</td></tr>
+  </tbody>
+</table>
+
+<h2 id="sb">附录 B：推荐 Git 别名</h2>
+<p>把以下内容加入 <code>~/.gitconfig</code> 的 <code>[alias]</code> 段：</p>
+<pre><code>[alias]
+    # 状态与日志
+    st     = status
+    sts    = status -sb
+    lg     = log --oneline --graph --decorate --all
+    lga    = log --oneline --graph --decorate --all
+    last   = log -1 HEAD
+    hist   = log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short
+
+    # 分支
+    co     = checkout
+    sw     = switch
+    swc    = switch -c
+    br     = branch
+    bra    = branch -a
+    del    = branch -d
+    delF   = branch -D
+
+    # 提交
+    ci     = commit
+    ca     = commit --amend
+    can    = commit --amend --no-edit
+    unstage = restore --staged .
+    discard = restore .
+
+    # 合并与变基
+    mg     = merge --no-ff
+    rb     = rebase
+    rbi    = rebase -i
+    rbc    = rebase --continue
+    rba    = rebase --abort
+
+    # 撤销
+    undo   = reset --soft HEAD~1
+    uncommit = reset --mixed HEAD~1
+    redo   = reset --hard HEAD@{1}
+
+    # 远程
+    pf     = push --force-with-lease
+    pl     = pull --rebase
+
+    # 实用工具
+    aliases = config --get-regexp alias
+    today  = log --oneline --since="00:00:00"
+    contrib = shortlog -sn --no-merges</code></pre>
+
+<h2 id="sc">附录 C：常用术语中英对照</h2>
+<table>
+  <thead><tr><th>英文</th><th>中文</th><th>解释</th></tr></thead>
+  <tbody>
+    <tr><td>Repository</td><td>仓库</td><td>Git 存储项目完整历史的地方</td></tr>
+    <tr><td>Working Directory</td><td>工作区</td><td>你硬盘上的项目文件夹</td></tr>
+    <tr><td>Staging Area / Index</td><td>暂存区</td><td>临时存放待提交改动的区域</td></tr>
+    <tr><td>Commit</td><td>提交</td><td>将暂存区的快照永久保存</td></tr>
+    <tr><td>Branch</td><td>分支</td><td>独立的开发线，平行的提交历史</td></tr>
+    <tr><td>HEAD</td><td>HEAD 指针</td><td>指向当前所在分支的最新提交</td></tr>
+    <tr><td>Merge</td><td>合并</td><td>将两条分支的历史合并到一起</td></tr>
+    <tr><td>Rebase</td><td>变基</td><td>将提交"搬迁"到另一个基础上</td></tr>
+    <tr><td>Fast-Forward</td><td>快进合并</td><td>当目标分支没有新提交时直接移动指针</td></tr>
+    <tr><td>Conflict</td><td>冲突</td><td>同一位置被不同分支修改，Git 无法自动合并</td></tr>
+    <tr><td>Remote</td><td>远程</td><td>托管在网络上的仓库副本</td></tr>
+    <tr><td>Origin</td><td>默认远程名</td><td>克隆时自动创建的远程名称</td></tr>
+    <tr><td>Fetch</td><td>获取</td><td>下载远程更新但不合并</td></tr>
+    <tr><td>Pull</td><td>拉取</td><td>下载远程更新并合并到本地</td></tr>
+    <tr><td>Push</td><td>推送</td><td>将本地提交上传到远程</td></tr>
+    <tr><td>Tag</td><td>标签</td><td>标记某个提交（常用作版本号）</td></tr>
+    <tr><td>SHA / Hash</td><td>哈希值</td><td>每个 Git 对象的唯一标识（如 abc1234）</td></tr>
+    <tr><td>Detached HEAD</td><td>分离头指针</td><td>HEAD 指向具体提交而非分支</td></tr>
+    <tr><td>Stash</td><td>暂存</td><td>临时保存工作区改动</td></tr>
+    <tr><td>Cherry-Pick</td><td>遴选</td><td>复制某个提交到当前分支</td></tr>
+    <tr><td>Squash</td><td>压缩</td><td>将多个提交合并为一个</td></tr>
+    <tr><td>Amend</td><td>修正</td><td>修改最近一次提交</td></tr>
+    <tr><td>Fork</td><td>复刻</td><td>将他人仓库复制到自己账户下</td></tr>
+    <tr><td>Pull Request (PR)</td><td>拉取请求</td><td>请求仓库维护者合并你的改动</td></tr>
+    <tr><td>Clone</td><td>克隆</td><td>将远程仓库完整下载到本地</td></tr>
+    <tr><td>Bare Repository</td><td>裸仓库</td><td>不含工作区的仓库（服务器上用）</td></tr>
+    <tr><td>Submodule</td><td>子模块</td><td>嵌套在仓库中的另一个独立仓库</td></tr>
+  </tbody>
+</table>
+
+<!-- Footer -->
+<div style="text-align:center; padding: 40px 0 20px; color: #999; font-size: 0.85rem; border-top: 1px solid #e0e0d8; margin-top: 40px;">
+  <p>📖 Made with ❤️ | 持续更新中 | 欢迎补充和纠错</p>
+  <p style="margin-top:4px;">
+    <a href="https://github.com/spinner-bot/fundamentals-forge" target="_blank">GitHub</a> ·
+    <a href="#s0">返回导航</a>
+  </p>
+</div>
+
 </div>
 </main>
 </body>
