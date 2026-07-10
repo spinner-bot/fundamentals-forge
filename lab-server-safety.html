@@ -824,5 +824,141 @@ ping 跳板机IP
 
 <!-- L4_END -->
 
+<!-- ===== APPENDIX A: 每日检查清单 ===== -->
+<h2 id="sa">A. ✅ 每日检查清单</h2>
+
+<table>
+  <thead><tr><th>检查项</th><th>命令</th><th>频率</th></tr></thead>
+  <tbody>
+    <tr><td>查看 GPU 状态</td><td><code>gpustat -apu</code></td><td>每次跑训练前</td></tr>
+    <tr><td>确认磁盘空间</td><td><code>df -h</code></td><td>每天</td></tr>
+    <tr><td>检查自己的显存占用</td><td><code>gpustat -apu | grep $(whoami)</code></td><td>每次训练后</td></tr>
+    <tr><td>检查自己的进程</td><td><code>ps aux | grep $(whoami)</code></td><td>每天</td></tr>
+    <tr><td>清理僵尸 tmux session</td><td><code>tmux ls</code></td><td>每周</td></tr>
+    <tr><td>清理旧 checkpoint</td><td><code>du -sh ~/project/*/checkpoints/</code></td><td>每周</td></tr>
+    <tr><td>清理 conda/pip 缓存</td><td><code>conda clean --all; pip cache purge</code></td><td>每月</td></tr>
+    <tr><td>代码 push 到 Git</td><td><code>git status</code> → <code>git push</code></td><td>每天离开前</td></tr>
+    <tr><td>检查 SSH 密钥权限</td><td><code>ls -la ~/.ssh/</code></td><td>首次设置后</td></tr>
+    <tr><td>备份重要 checkpoint</td><td><code>rsync -avz ckpt/ backup:/path/</code></td><td>每周</td></tr>
+  </tbody>
+</table>
+
+
+<!-- ===== APPENDIX B: 安全口诀 ===== -->
+<h2 id="sb">B. 📜 安全口诀（贴在显示器旁边）</h2>
+
+<div class="danger-box" style="text-align:center;">
+  <h3 style="color:#c62828; margin-bottom:16px; font-size:1.3rem;">🔴 服务器操作十诫</h3>
+  <table style="background:transparent; box-shadow:none;">
+    <tbody>
+      <tr><td style="width:40px;text-align:center;font-weight:bold;color:#c62828;">1</td><td>删除之前三确认，sudo rm 是大忌</td></tr>
+      <tr><td style="width:40px;text-align:center;font-weight:bold;color:#c62828;">2</td><td>重启服务器前，全组通知先到位</td></tr>
+      <tr><td style="width:40px;text-align:center;font-weight:bold;color:#c62828;">3</td><td>磁盘空间常查看，满盘之日悔已晚</td></tr>
+      <tr><td style="width:40px;text-align:center;font-weight:bold;color:#c62828;">4</td><td>系统文件不要碰，不懂就问管理员</td></tr>
+      <tr><td style="width:40px;text-align:center;font-weight:bold;color:#c62828;">5</td><td>GPU 先查再用，占着不用最可恨</td></tr>
+      <tr><td style="width:40px;text-align:center;font-weight:bold;color:#c62828;">6</td><td>长时间训练放 tmux，断线进程不乱杀</td></tr>
+      <tr><td style="width:40px;text-align:center;font-weight:bold;color:#c62828;">7</td><td>代码每天 git push，永远不怕误删和丢</td></tr>
+      <tr><td style="width:40px;text-align:center;font-weight:bold;color:#c62828;">8</td><td>别人的进程不要 kill，群里先问一句话</td></tr>
+      <tr><td style="width:40px;text-align:center;font-weight:bold;color:#c62828;">9</td><td>root 权限如刀枪，没有理由不要拿</td></tr>
+      <tr><td style="width:40px;text-align:center;font-weight:bold;color:#c62828;">10</td><td>重要数据常备份，出事才知备份好</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout success" style="text-align:center; margin-top:20px;">
+  <span class="callout-icon">🙏</span>
+  <div><strong>一个心态：</strong>这台服务器是实验室<strong>最宝贵的公共资源</strong>之一。<br>
+  你每次登录时，旁边还有 N 个同学的实验在运行。<br>
+  操作前多想一步：「我这个操作，会不会影响别人？」<br>
+  <strong>保持敬畏，安全第一。</strong></div>
+</div>
+
+
+<!-- ===== APPENDIX C: 快速配置模板 ===== -->
+<h2 id="sc">C. 📁 快速配置模板</h2>
+
+<h3>C.1 推荐的 ~/.bashrc 追加内容</h3>
+<pre><code># ===== GPU 查询别名 =====
+alias gs='gpustat -apu'
+alias gsw='watch -n 1 gpustat -cP'
+alias ns='nvidia-smi'
+
+# ===== 磁盘查询 =====
+alias dfh='df -h'
+alias mydisk='du -sh /home/$(whoami) /data/$(whoami) 2>/dev/null'
+
+# ===== 进程管理 =====
+alias myps='ps aux | grep $(whoami) | grep -v grep'
+alias mygpu='gpustat -apu | grep $(whoami)'
+
+# ===== tmux =====
+alias tl='tmux ls'
+alias ta='tmux attach -t'
+alias tn='tmux new -s'
+
+# ===== conda =====
+alias ca='conda activate'
+alias cel='conda env list'
+
+# ===== 安全 rm（可选）=====
+alias rm='rm -i'
+
+# ===== 每次登录自动显示 GPU 状态 =====
+if command -v gpustat &> /dev/null; then
+    echo "=== GPU Status ==="
+    gpustat --no-header 2>/dev/null && gpustat -apu 2>/dev/null | head -5
+fi</code></pre>
+
+<h3>C.2 训练安全启动脚本模板</h3>
+<pre><code>#!/bin/bash
+# safe_train.sh — 带安全检查的训练启动脚本
+set -euo pipefail
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; NC='\033[0m'
+
+GPU=${1:?请指定 GPU ID (如: bash safe_train.sh 0)}
+BATCH=${2:-32}; EPOCHS=${3:-100}
+
+echo -e "${GREEN}=== 训练前安全检查 ===${NC}"
+
+# GPU 检查
+echo "GPU $GPU 状态："
+gpustat -i $GPU 2>/dev/null | tail -2 || nvidia-smi --query-gpu=index,memory.used,name --format=csv -i $GPU
+
+# 磁盘检查
+USE_PCT=$(df -h /home | tail -1 | awk '{print $5}' | sed 's/%//')
+if [ "$USE_PCT" -gt 85 ]; then
+    echo -e "${RED}⚠️  警告：磁盘使用率 ${USE_PCT}%！${NC}"
+fi
+
+# 内存检查
+FREE_MEM=$(free -g | awk '/^Mem:/{print $7}')
+echo "空闲内存: ${FREE_MEM}GB"
+
+echo -e "${GREEN}=== 启动训练 ===${NC}"
+echo "GPU=$GPU Batch=$BATCH Epochs=$EPOCHS"
+
+SESSION="train-gpu${GPU}-$(date +%m%d-%H%M)"
+tmux new -d -s "$SESSION" \
+    "CUDA_VISIBLE_DEVICES=$GPU python train.py --batch $BATCH --epochs $EPOCHS 2>&1 | tee logs/train_$(date +%Y%m%d_%H%M).log"
+
+echo "tmux session: $SESSION"
+echo "查看: tmux attach -t $SESSION"
+echo "监控: gpustat -i $GPU"</code></pre>
+
+<!-- Footer -->
+<div style="text-align:center; padding: 40px 0 20px; color: #999; font-size: 0.85rem; border-top: 1px solid #e8d8d8; margin-top: 40px;">
+  <p>⚠️ 安全无小事 | 保持敬畏之心 | 欢迎补充实验室实际案例</p>
+  <p style="margin-top:4px;">
+    <a href="https://github.com/spinner-bot/fundamentals-forge" target="_blank">GitHub</a> ·
+    <a href="#s0">返回导航顶部</a>
+  </p>
+</div>
+
+</div>
+</main>
+</body>
+</html>
+
 
 
