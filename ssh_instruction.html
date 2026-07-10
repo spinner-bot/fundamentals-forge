@@ -456,3 +456,214 @@ ssh-add --apple-use-keychain ~/.ssh/id_ed25519</code></pre>
 
 <!-- P2_END -->
 
+<!-- ===== SECTION 3: 客户端配置 ===== -->
+<h2 id="s3">3. ⚙️ 客户端配置（~/.ssh/config）</h2>
+<blockquote class="tip"><code>~/.ssh/config</code> 是 SSH 最被低估但最强大的功能之一。它让你用简短的别名替代一长串命令，同时透明地处理跳板机、端口转发、密钥选择等。</blockquote>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 配置文件语法与基础项</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：<code>Host</code> 定义一组配置，缩进（可选）表示从属关系，匹配到的第一个 Host 生效。</p>
+
+  <pre><code># ~/.ssh/config 完整示例
+# 全局默认值（对所有 Host 生效）
+Host *
+    ServerAliveInterval 60          # 每 60s 发心跳包防断连
+    ServerAliveCountMax 5           # 连续 5 次无响应才判定断开
+    TCPKeepAlive yes
+    Compression yes                 # 开启压缩（慢网络有用）
+    IdentitiesOnly yes              # 只用显式指定的密钥
+
+# 实验室跳板机
+Host bastion
+    HostName 202.120.xx.xx          # 跳板机公网 IP 或域名
+    Port 22
+    User zhang-san                   # 你的用户名
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 30
+
+# 内网 GPU 服务器（通过跳板机连接）
+Host gpu01
+    HostName 192.168.1.101           # 内网 IP
+    User zhang-san
+    IdentityFile ~/.ssh/id_ed25519
+    ProxyJump bastion                # ⭐ 通过跳板机
+    # 等价旧写法: ProxyCommand ssh -W %h:%p bastion</code></pre>
+
+  <h4>Host 匹配规则（重要！）</h4>
+  <table>
+    <thead><tr><th>模式</th><th>匹配</th><th>示例</th></tr></thead>
+    <tbody>
+      <tr><td><code>Host myserver</code></td><td>精确匹配</td><td><code>ssh myserver</code></td></tr>
+      <tr><td><code>Host gpu*</code></td><td>通配符匹配</td><td>gpu01, gpu02, gpu-train</td></tr>
+      <tr><td><code>Host *</code></td><td>匹配所有（放最后做默认值）</td><td>全局设置</td></tr>
+      <tr><td><code>Host !pattern</code></td><td>排除匹配</td><td><code>Host * !bastion</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 常用配置项速查</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <table>
+    <thead><tr><th>配置项</th><th>作用</th><th>推荐值</th></tr></thead>
+    <tbody>
+      <tr><td><code>HostName</code></td><td>服务器真实 IP 或域名</td><td><code>192.168.1.100</code></td></tr>
+      <tr><td><code>Port</code></td><td>SSH 端口（默认22）</td><td><code>22</code></td></tr>
+      <tr><td><code>User</code></td><td>登录用户名</td><td><code>zhangsan</code></td></tr>
+      <tr><td><code>IdentityFile</code></td><td>私钥路径（可多次指定：备选密钥）</td><td><code>~/.ssh/id_ed25519</code></td></tr>
+      <tr><td><code>ProxyJump</code></td><td>跳板机（⭐ 推荐）</td><td><code>bastion</code></td></tr>
+      <tr><td><code>ServerAliveInterval</code></td><td>心跳间隔（秒），防断连</td><td><code>60</code></td></tr>
+      <tr><td><code>ServerAliveCountMax</code></td><td>最大心跳无响应次数</td><td><code>5</code></td></tr>
+      <tr><td><code>ForwardAgent</code></td><td>是否转发 ssh-agent 到服务器</td><td><code>no</code>（安全）/ <code>yes</code>（方便）</td></tr>
+      <tr><td><code>LocalForward</code></td><td>本地端口转发</td><td><code>8888 localhost:8888</code></td></tr>
+      <tr><td><code>RemoteForward</code></td><td>远程端口转发</td><td><code>0.0.0.0:6000 localhost:22</code></td></tr>
+      <tr><td><code>DynamicForward</code></td><td>动态 SOCKS 代理</td><td><code>1080</code></td></tr>
+      <tr><td><code>StrictHostKeyChecking</code></td><td>首次连接是否询问</td><td><code>accept-new</code>（安全又方便）</td></tr>
+      <tr><td><code>LogLevel</code></td><td>日志详细度</td><td><code>INFO</code> / 调试时 <code>DEBUG3</code></td></tr>
+      <tr><td><code>Compression</code></td><td>是否压缩传输</td><td><code>yes</code>（慢网络）/ <code>no</code>（局域网）</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 免密登录链</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：跳板机+内网服务器的完整免密链，需要把公钥分别部署到每一跳。</p>
+
+  <pre><code># 步骤 1: 生成密钥（只需一次）
+ssh-keygen -t ed25519 -C "lab-key"
+
+# 步骤 2: 把公钥放到跳板机
+ssh-copy-id -i ~/.ssh/id_ed25519.pub user@bastion
+
+# 步骤 3: 把公钥也放到内网服务器
+# 方法 A — 从本地直接放（如果网络可达）
+ssh-copy-id -i ~/.ssh/id_ed25519.pub user@gpu01
+
+# 方法 B — 从跳板机转发（如果内网不通本地）
+ssh bastion "cat >> ~/.ssh/authorized_keys" < ~/.ssh/id_ed25519.pub
+# 然后从跳板机 ssh-copy-id 到内网
+ssh bastion
+ssh-copy-id -i ~/.ssh/id_ed25519.pub user@gpu01
+
+# 验证免密链
+ssh gpu01   # 应直接登录（本机→跳板机→内网服务器，全程免密）</code></pre>
+</div>
+
+
+<!-- ===== SECTION 4: 文件传输 ===== -->
+<h2 id="s4">4. 📁 文件传输</h2>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 scp（安全复制）</span>
+    <span class="badges-row"><span class="badge badge-green">基础</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：基于 SSH 的安全文件复制命令，语法类似 <code>cp</code>，支持本地↔远程双向。</p>
+
+  <pre><code># 基本语法
+scp [选项] 源 目标
+
+# 上传：本地 → 远程
+scp data.csv user@server:/home/user/data/
+scp -r model/ user@server:/home/user/          # -r 递归复制目录
+
+# 下载：远程 → 本地
+scp user@server:/logs/app.log ./
+scp -r user@server:/home/user/results/ ./      # 下载整个目录
+
+# 常用选项
+scp -P 2222 file user@server:/path/            # 指定端口（大写 P！）
+scp -C large_file user@server:/path/            # 压缩传输
+scp -v file user@server:/path/                  # 显示详细信息（调试用）
+scp -p file user@server:/path/                  # 保留文件时间戳和权限</code></pre>
+
+  <h4>通过跳板机传输文件</h4>
+  <pre><code># 方法 1：如果你配置了 ~/.ssh/config 中的 ProxyJump
+scp data.csv gpu01:/home/user/data/    # 直接用别名！与普通 scp 完全一样
+
+# 方法 2：显式指定跳板机
+scp -o ProxyJump=bastion data.csv gpu01:/home/user/
+
+# 方法 3：通过跳板机中转（笨办法，但能理解原理）
+scp data.csv bastion:/tmp/             # 先传到跳板机
+ssh bastion "scp /tmp/data.csv gpu01:/home/user/"  # 再从跳板机传到内网</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 rsync（增量同步）</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：比 scp 更智能的同步工具 — 只传差异部分，支持断点续传，适合大数据集和代码同步。</p>
+
+  <pre><code># 基本用法（-a 归档模式 = 保留权限+时间戳+递归, -v 详细, -z 压缩）
+rsync -avz src_dir/ user@server:dst_dir/
+
+# ⚠️ 注意：src/ 和 src 的区别！
+rsync -avz data/ user@server:data/     # 同步 data/ 目录<strong>里的内容</strong> 到远程 data/
+rsync -avz data user@server:data/      # 同步 data 目录<strong>本身</strong> 到远程
+
+# 常用组合
+rsync -avz --progress data/ user@server:data/   # 显示进度
+rsync -avz --delete src/ dst/                    # ⚠️ 镜像同步（目标多余文件会被删）
+rsync -avz --exclude='*.pyc' --exclude='__pycache__/' src/ dst/  # 排除文件
+rsync -avz --max-size=100m src/ dst/             # 只传 ≤100MB 的文件
+rsync -avz --dry-run src/ dst/                   # 试运行：只显示会做什么，不实际执行
+rsync -avz -e "ssh -p 2222" src/ user@host:dst/ # 指定 SSH 选项
+
+# 通过跳板机同步
+rsync -avz -e "ssh -J bastion" src/ gpu01:dst/  # -J 指定跳板机
+# 或者配置了 ProxyJump 后直接用别名
+rsync -avz src/ gpu01:dst/</code></pre>
+
+  <h4>scp vs rsync 选哪个？</h4>
+  <table>
+    <thead><tr><th>场景</th><th>推荐</th><th>原因</th></tr></thead>
+    <tbody>
+      <tr><td>传几个小文件</td><td>scp</td><td>简单直接</td></tr>
+      <tr><td>传大文件 / 数据集</td><td>rsync</td><td>断点续传，不怕中断</td></tr>
+      <tr><td>同步项目代码</td><td>rsync</td><td>只传变更部分，快得多</td></tr>
+      <tr><td>定期备份目录</td><td>rsync</td><td>增量+去重，效率最高</td></tr>
+      <tr><td>简单的一次性复制</td><td>scp</td><td>少打几个字母</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 sftp（交互式文件管理）</span>
+    <span class="badges-row"><span class="badge badge-green">实用</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：基于 SSH 的交互式文件管理器，类似 FTP，支持 ls/cd/get/put 等命令。许多 GUI 文件管理器也基于 SFTP。</p>
+
+  <pre><code># 连接到服务器
+sftp user@server
+
+# sftp 内的常用命令
+sftp> ls                     # 列出远程目录
+sftp> cd /remote/path        # 切换远程目录
+sftp> lcd /local/path        # 切换本地目录
+sftp> get file.txt           # 下载（远程→本地）
+sftp> get -r dir/            # 递归下载目录
+sftp> put file.txt           # 上传（本地→远程）
+sftp> put -r dir/            # 递归上传
+sftp> rm file.txt            # 删除远程文件
+sftp> pwd                    # 显示远程当前目录
+sftp> lpwd                   # 显示本地当前目录
+sftp> !command               # 执行本地命令（如 !ls）
+
+# 通过跳板机也可以
+sftp -J bastion gpu01</code></pre>
+</div>
+
+<!-- P3_END -->
+
+
