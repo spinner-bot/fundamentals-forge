@@ -1160,6 +1160,119 @@ writer.close()
 
 <!-- PT5_END -->
 
+<!-- ===== APPENDIX A: API 速查表 ===== -->
+<h2 id="sa">A. 📋 API 速查表</h2>
+
+<table>
+  <thead><tr><th>分类</th><th>API</th><th>一句话用途</th></tr></thead>
+  <tbody>
+    <tr><td rowspan="8"><strong>张量</strong></td><td><code>torch.tensor(data)</code></td><td>从列表/数组创建张量</td></tr>
+    <tr><td><code>torch.zeros(*size)</code> / <code>torch.ones(*size)</code></td><td>全零 / 全一张量</td></tr>
+    <tr><td><code>torch.randn(*size)</code> / <code>torch.rand(*size)</code></td><td>正态 / 均匀随机张量</td></tr>
+    <tr><td><code>torch.arange(start, end, step)</code></td><td>等差序列张量</td></tr>
+    <tr><td><code>x.to(device)</code> / <code>x.cuda()</code></td><td>移至指定设备 / GPU</td></tr>
+    <tr><td><code>x.view(*shape)</code> / <code>x.reshape(*shape)</code></td><td>改变形状</td></tr>
+    <tr><td><code>x.squeeze()</code> / <code>x.unsqueeze(dim)</code></td><td>删除/插入大小为1的维度</td></tr>
+    <tr><td><code>torch.cat(tensors, dim)</code> / <code>torch.stack(tensors, dim)</code></td><td>拼接 / 堆叠张量</td></tr>
+    <tr><td rowspan="4"><strong>自动求导</strong></td><td><code>x.requires_grad_(True)</code></td><td>开启梯度追踪</td></tr>
+    <tr><td><code>loss.backward()</code></td><td>反向传播计算梯度</td></tr>
+    <tr><td><code>torch.no_grad()</code></td><td>上下文管理器，禁用梯度计算</td></tr>
+    <tr><td><code>x.detach()</code></td><td>断开计算图</td></tr>
+    <tr><td rowspan="8"><strong>nn 层</strong></td><td><code>nn.Linear(in, out)</code></td><td>全连接层</td></tr>
+    <tr><td><code>nn.Conv2d(in_c, out_c, k, s, p)</code></td><td>二维卷积</td></tr>
+    <tr><td><code>nn.LSTM(in, hidden, layers)</code></td><td>LSTM 循环层</td></tr>
+    <tr><td><code>nn.BatchNorm1d/2d(n)</code></td><td>批归一化</td></tr>
+    <tr><td><code>nn.LayerNorm(n)</code></td><td>层归一化</td></tr>
+    <tr><td><code>nn.Dropout(p)</code></td><td>随机失活正则化</td></tr>
+    <tr><td><code>nn.ReLU()</code> / <code>F.relu()</code></td><td>ReLU 激活</td></tr>
+    <tr><td><code>nn.Sequential(*layers)</code></td><td>顺序容器</td></tr>
+    <tr><td rowspan="4"><strong>损失</strong></td><td><code>nn.CrossEntropyLoss()</code></td><td>多分类（⭐ 最常用）</td></tr>
+    <tr><td><code>nn.BCEWithLogitsLoss()</code></td><td>二分类/多标签</td></tr>
+    <tr><td><code>nn.MSELoss()</code></td><td>均方误差（回归）</td></tr>
+    <tr><td><code>nn.L1Loss()</code></td><td>绝对值误差</td></tr>
+    <tr><td rowspan="4"><strong>优化器</strong></td><td><code>optim.Adam(params, lr)</code></td><td>⭐ Adam 优化器（通用首选）</td></tr>
+    <tr><td><code>optim.AdamW(params, lr, weight_decay)</code></td><td>⭐ AdamW（Transformer 首选）</td></tr>
+    <tr><td><code>optim.SGD(params, lr, momentum)</code></td><td>带动量 SGD（ResNet 常用）</td></tr>
+    <tr><td><code>optimizer.zero_grad()</code></td><td>梯度清零（每 step 前必须）</td></tr>
+    <tr><td rowspan="3"><strong>数据</strong></td><td><code>TensorDataset(X, y)</code></td><td>从张量创建数据集</td></tr>
+    <tr><td><code>DataLoader(ds, batch_size, shuffle)</code></td><td>批次加载器</td></tr>
+    <tr><td><code>transforms.Compose([...])</code></td><td>数据增强流水线</td></tr>
+    <tr><td rowspan="4"><strong>保存/加载</strong></td><td><code>torch.save(model.state_dict(), p)</code></td><td>⭐ 保存权重</td></tr>
+    <tr><td><code>model.load_state_dict(torch.load(p))</code></td><td>⭐ 加载权重</td></tr>
+    <tr><td><code>torch.jit.trace(model, inp)</code></td><td>TorchScript 追踪</td></tr>
+    <tr><td><code>torch.onnx.export(model, inp, p)</code></td><td>导出 ONNX</td></tr>
+  </tbody>
+</table>
+
+
+<!-- ===== APPENDIX B: 常见错误与解决 ===== -->
+<h2 id="sb">B. 🔧 常见错误与解决</h2>
+
+<table>
+  <thead><tr><th>错误信息</th><th>原因</th><th>解决方法</th></tr></thead>
+  <tbody>
+    <tr><td><code>RuntimeError: Expected all tensors to be on the same device</code></td><td>模型和数据在不同设备上</td><td>统一用 <code>.to(device)</code></td></tr>
+    <tr><td><code>RuntimeError: CUDA out of memory</code></td><td>显存不足</td><td>减小 batch_size；用 AMP；<code>del</code>+<code>empty_cache()</code></td></tr>
+    <tr><td><code>RuntimeError: shape '[...]' is invalid for input of size N</code></td><td>view 形状不兼容</td><td>用 <code>reshape()</code> 代替，或先算 <code>numel()</code></td></tr>
+    <tr><td><code>AttributeError: 'NoneType' object has no attribute 'grad'</code></td><td>参数没开启 requires_grad</td><td>检查 <code>requires_grad=True</code></td></tr>
+    <tr><td>loss = NaN</td><td>学习率太大 / 数值溢出</td><td>降低 lr；加梯度裁剪；检查数据是否有 NaN</td></tr>
+    <tr><td><code>UserWarning: volatile was removed</code></td><td>旧代码用到 volatile</td><td>替换为 <code>torch.no_grad()</code></td></tr>
+    <tr><td>训练时 loss 不下降</td><td>学习率太小/太大、数据问题、梯度消失</td><td>调 lr；检查数据归一化；加 BatchNorm</td></tr>
+    <tr><td><code>RuntimeError: DataLoader worker (pid) exited unexpectedly</code></td><td>多进程异常（常因内存不足）</td><td>减少 num_workers；设 <code>pin_memory=False</code></td></tr>
+    <tr><td>验证时显存依然增长</td><td>计算图没释放</td><td>用 <code>torch.no_grad()</code>；不要保留 <code>output</code> 引用</td></tr>
+    <tr><td><code>load_state_dict</code> keys 不匹配</td><td>模型结构变了 / 缺少 <code>module.</code> 前缀</td><td>去掉 DDP 前缀：<code>{k.replace('module.',''): v for k,v in ckpt.items()}</code></td></tr>
+  </tbody>
+</table>
+
+
+<!-- ===== APPENDIX C: 术语对照 ===== -->
+<h2 id="sc">C. 📖 术语中英对照</h2>
+
+<table>
+  <thead><tr><th>英文</th><th>中文</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>Tensor</td><td>张量</td><td>多维数组，PyTorch 核心数据结构</td></tr>
+    <tr><td>Autograd</td><td>自动求导</td><td>自动计算梯度的引擎</td></tr>
+    <tr><td>Computation Graph</td><td>计算图</td><td>操作的有向无环图（DAG），反向传播沿图传播</td></tr>
+    <tr><td>Dynamic Graph</td><td>动态计算图</td><td>每次前向传播动态构建（PyTorch 核心特性）</td></tr>
+    <tr><td>Eager Execution</td><td>即时执行</td><td>代码写完立刻执行，不先编译整个图</td></tr>
+    <tr><td>Forward Pass</td><td>前向传播</td><td>从输入计算输出</td></tr>
+    <tr><td>Backward Pass</td><td>反向传播</td><td>从 loss 计算所有梯度</td></tr>
+    <tr><td>Gradient</td><td>梯度</td><td>loss 对每个参数的偏导数</td></tr>
+    <tr><td>Epoch</td><td>轮次</td><td>完整遍历一次训练集</td></tr>
+    <tr><td>Batch / Mini-batch</td><td>批次 / 小批次</td><td>每次更新参数用的一小批样本</td></tr>
+    <tr><td>Learning Rate (lr)</td><td>学习率</td><td>每次参数更新的步长</td></tr>
+    <tr><td>Weight Decay</td><td>权重衰减</td><td>L2 正则化，防止过拟合</td></tr>
+    <tr><td>Scheduler</td><td>学习率调度器</td><td>动态调整学习率的策略</td></tr>
+    <tr><td>state_dict</td><td>状态字典</td><td>存储模型/优化器参数的 Python dict</td></tr>
+    <tr><td>Checkpoint</td><td>检查点</td><td>包含模型+优化器+训练进度的完整快照</td></tr>
+    <tr><td>Fine-tuning</td><td>微调</td><td>在预训练模型上用新数据继续训练</td></tr>
+    <tr><td>Transfer Learning</td><td>迁移学习</td><td>将预训练知识应用到新任务</td></tr>
+    <tr><td>Mixed Precision</td><td>混合精度</td><td>float16+float32 混合训练，加速+省显存</td></tr>
+    <tr><td>CUDA</td><td>统一计算设备架构</td><td>NVIDIA GPU 的并行计算平台</td></tr>
+    <tr><td>DDP</td><td>分布式数据并行</td><td>DistributedDataParallel，多GPU训练最佳方案</td></tr>
+    <tr><td>DataLoader</td><td>数据加载器</td><td>批量、多线程地提供训练数据</td></tr>
+    <tr><td>GradScaler</td><td>梯度缩放器</td><td>AMP 中防 float16 梯度下溢的工具</td></tr>
+    <tr><td>TorchScript</td><td>Torch 脚本</td><td>PyTorch 的 JIT 编译工具，用于部署</td></tr>
+    <tr><td>ONNX</td><td>开放神经网络交换</td><td>跨框架模型交换格式</td></tr>
+    <tr><td>Quantization</td><td>量化</td><td>float32→int8，模型压缩和加速</td></tr>
+  </tbody>
+</table>
+
+<!-- Footer -->
+<div style="text-align:center; padding: 40px 0 20px; color: #999; font-size: 0.85rem; border-top: 1px solid #e0e0d8; margin-top: 40px;">
+  <p>🔥 Made with ❤️ | 持续更新中 | 欢迎补充和纠错</p>
+  <p style="margin-top:4px;">
+    <a href="https://github.com/spinner-bot/fundamentals-forge" target="_blank">GitHub</a> ·
+    <a href="#s0">返回导航</a>
+  </p>
+</div>
+
+</div>
+</main>
+</body>
+</html>
+
 
 
 
