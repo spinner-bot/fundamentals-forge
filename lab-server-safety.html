@@ -408,3 +408,184 @@ gpustat -apu | grep $(whoami)</code></pre>
 
 <!-- L2_END -->
 
+<!-- ===== SECTION 2: 文件与磁盘 ===== -->
+<h2 id="s2">2. 📁 文件与磁盘操作规范</h2>
+
+<h3>2.1 推荐目录结构</h3>
+<pre><code>/home/用户名/               # 你的主目录：代码、配置、小型脚本
+├── projects/               # 各项目代码
+│   ├── project-A/
+│   │   ├── code/
+│   │   ├── checkpoints/    # ⚠️ 定期清理旧 checkpoint！
+│   │   └── logs/
+│   └── project-B/
+├── .ssh/                   # SSH 密钥（权限必须 700/600！）
+├── .bashrc                 # 个人环境配置
+└── .conda/                 # conda 环境（也可以放 /data 下）
+
+/data/用户名/               # ⭐ 大数据集、大型模型文件放这里
+├── datasets/
+├── pretrained_models/
+└── large_outputs/
+
+# ⚠️ 不要把 ImageNet/COCO 这样的大数据集直接解压到 /home！
+# 100GB 数据集放到 /home 可能占满分区，让全组无法登录</code></pre>
+
+<h3>2.2 磁盘监控（每周必做）</h3>
+<pre><code># ① 查看各分区剩余空间
+df -h
+# 重点看 / 和 /home 的 Use% 是否超过 80%
+
+# ② 查看自己占了多大空间
+du -sh /home/$(whoami) /data/$(whoami) 2>/dev/null
+
+# ③ 找出自己目录下的 Top 10 大文件
+du -ah /home/$(whoami) 2>/dev/null | sort -rh | head -10
+
+# ④ 查看 inode 使用（小文件太多也会耗尽文件系统）
+df -i
+
+# ⑤ 找大文件（>1GB）
+find /home/$(whoami) -type f -size +1G -exec ls -lh {} \; 2>/dev/null</code></pre>
+
+<h3>2.3 清理策略</h3>
+<table>
+  <thead><tr><th>文件类型</th><th>保留策略</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>模型 checkpoint</td><td>只保留 best + 最近 3 个 epoch</td><td>每个 checkpoint 可能几百 MB~几 GB</td></tr>
+    <tr><td>训练日志</td><td>保留 30 天，之后压缩归档</td><td><code>gzip *.log</code> 压缩率可达 90%</td></tr>
+    <tr><td>TensorBoard event 文件</td><td>任务结束后删除</td><td>这类文件非常占空间</td></tr>
+    <tr><td>下载的数据集压缩包</td><td>解压后删除压缩包</td><td>.tar.gz 和内容同时存在 = 占双倍空间</td></tr>
+    <tr><td>Python cache 文件</td><td>随时可删</td><td><code>find . -type d -name __pycache__ -exec rm -rf {} +</code></td></tr>
+    <tr><td>conda 缓存</td><td>每月清理</td><td><code>conda clean --all</code></td></tr>
+    <tr><td>pip 缓存</td><td>每月清理</td><td><code>pip cache purge</code></td></tr>
+  </tbody>
+</table>
+
+<div class="rule-box good">
+  <strong>✅ 好习惯</strong>：在 checkpoint 保存代码中只保留最优模型 + 最近 3 个：
+  <pre><code># 每个 epoch 保存后，删除旧的 checkpoint
+import os, glob
+ckpts = sorted(glob.glob('ckpt_epoch_*.pth'))
+for old in ckpts[:-3]:   # 只保留最近 3 个
+    os.remove(old)</code></pre>
+</div>
+
+
+<!-- ===== SECTION 3: GPU 使用规范 ===== -->
+<h2 id="s3">3. 🖥️ GPU 使用规范</h2>
+
+<h3>3.1 使用前必查：选一块空闲的 GPU</h3>
+<pre><code># ⭐ 最推荐：gpustat（信息最全）
+# 先安装：pip install gpustat
+gpustat -apu
+# 输出示例：
+# gpu01  Fri Jul 10 15:00:00 2025  550.90.07
+# [0] GeForce RTX 4090 | 35°C,  95 % | 22000 / 24564 MB | zhang-san:train.py/12345(21500MB)
+# [1] GeForce RTX 4090 | 40°C,   0 % |     0 / 24564 MB | (无进程)
+#   → GPU 1 空闲，用 CUDA_VISIBLE_DEVICES=1
+
+# 也可以看详细信息
+nvidia-smi
+
+# 查看 GPU 利用率（谁在用但实际没跑任务）
+nvidia-smi --query-gpu=index,utilization.gpu,memory.used,name --format=csv</code></pre>
+
+<h3>3.2 指定 GPU 的四种方式</h3>
+<pre><code># 方式一：命令行指定（⭐ 最推荐，每次运行显式指定）
+CUDA_VISIBLE_DEVICES=2 python train.py
+
+# 方式二：在代码开头指定（必须在 import torch 之前）
+import os; os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+import torch
+
+# 方式三：临时对当前 shell 生效
+export CUDA_VISIBLE_DEVICES=0,1    # 使用 GPU 0 和 1
+
+# 方式四：在 .bashrc 中设置默认值（⚠️ 容易忘记改，不推荐）
+# echo 'export CUDA_VISIBLE_DEVICES=1' >> ~/.bashrc</code></pre>
+
+<h3>3.3 显存管理最佳实践</h3>
+<table>
+  <thead><tr><th>技巧</th><th>代码</th><th>效果</th></tr></thead>
+  <tbody>
+    <tr><td><strong>混合精度训练</strong></td><td><code>with torch.amp.autocast('cuda'):</code></td><td>显存减少 ~40%，速度提升 30-50%</td></tr>
+    <tr><td><strong>梯度累积</strong></td><td><code>loss.backward()</code> 每 N 步才 <code>optimizer.step()</code></td><td>小显存也能跑大 batch</td></tr>
+    <tr><td><strong>手动释放显存</strong></td><td><code>del var; torch.cuda.empty_cache()</code></td><td>释放不再用的显存</td></tr>
+    <tr><td><strong>梯度检查点</strong></td><td><code>from torch.utils.checkpoint import checkpoint</code></td><td>用计算换显存，节省 50%+</td></tr>
+    <tr><td><strong>batch_size 选择</strong></td><td>先用小 batch_size 跑通，再逐渐加大</td><td>避免一开始就 OOM</td></tr>
+    <tr><td><strong>推理时 no_grad</strong></td><td><code>with torch.no_grad():</code></td><td>不存计算图，大幅省显存</td></tr>
+  </tbody>
+</table>
+
+<h3>3.4 多用户 GPU 使用礼仪</h3>
+<div class="rule-box">
+  <strong>⚠️ GPU 使用黄金法则</strong>：
+  <ol>
+    <li><strong>先查后用</strong>：每次跑训练前必须 gpustat 确认 GPU 空闲</li>
+    <li><strong>只占用明确需要的 GPU</strong>：用 CUDA_VISIBLE_DEVICES 显式选择</li>
+    <li><strong>训练结束后立即释放</strong>：不要让空闲进程占着显存</li>
+    <li><strong>长时间训练（&gt;24h）在群里通知</strong>：告知占用的 GPU 编号和预计时长</li>
+    <li><strong>不抢占别人还在用的 GPU</strong>：即使利用率很低也先问一声</li>
+    <li><strong>不要同时占用全部 GPU</strong>：给其他人留至少 1-2 块</li>
+    <li><strong>训练完了在群里说一声</strong>：让排队的人可以接着用</li>
+  </ol>
+</div>
+
+
+<!-- ===== SECTION 4: 进程与资源管理 ===== -->
+<h2 id="s4">4. ⚡ 进程与资源管理</h2>
+
+<h3>4.1 tmux 使用规范（强制）</h3>
+<blockquote class="warning">任何预计运行超过 10 分钟的任务，<strong>必须放到 tmux/screen 中运行</strong>。否则你的 SSH 一断，进程就没了。</blockquote>
+
+<pre><code># 命名规范：用你的名字+任务名，方便别人识别
+tmux new -s zhangsan-train-resnet    # ✅ 好
+tmux new -s test                     # ❌ 太模糊，不知道是谁的
+
+# 完整工作流
+tmux new -s myname-task
+conda activate torch-gpu
+CUDA_VISIBLE_DEVICES=3 python train.py
+# Ctrl+B, D → 安全脱离（训练继续跑）
+
+# 下次回来看：
+tmux ls                    # 列出所有 session
+tmux attach -t myname-task # 重新连接
+
+# 训练完成 → 清理你的 session！
+tmux kill-session -t myname-task     # 或用 exit</code></pre>
+
+<h3>4.2 CPU 与内存管理</h3>
+<pre><code># 查看自己占用的资源
+top -u $(whoami)
+
+# 查看自己的所有进程
+ps aux | grep $(whoami)
+
+# 批量清理自己的僵尸进程
+ps aux | grep $(whoami) | grep defunct | awk '{print $2}' | xargs kill
+
+# DataLoader workers：不要超过 CPU 核心数/GPU 数量
+n_cpu=$(nproc)
+n_gpu=$(nvidia-smi -L | wc -l)
+# 单 GPU 训练：num_workers 设为 4-8 即可
+# 多 GPU 训练：num_workers 不超过 n_cpu/(2*n_gpu)</code></pre>
+
+<h3>4.3 后台任务规范</h3>
+<pre><code># ✅ tmux（首选！）
+tmux new -s task; python train.py; Ctrl+B D
+
+# ✅ nohup（备用，简单的单次任务）
+nohup python train.py > train.log 2>&1 &
+# 退出后进程继续运行，输出重定向到 train.log
+
+# ❌ 直接 &（ssh 断开后进程可能被 kill）
+python train.py &
+
+# 查看后台任务
+jobs -l</code></pre>
+
+<!-- L3_END -->
+
+
