@@ -223,3 +223,188 @@ mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'loose',
 
 <div class="content">
 <!-- L1_END -->
+
+<!-- ===== SECTION 0: 阅读导航 ===== -->
+<h2 id="s0">🧭 阅读导航</h2>
+
+<div class="danger-box">
+  <h4>⚠️ 在阅读正文之前，请先理解</h4>
+  <p style="margin:8px 0 0 0;">这台 GPU 服务器的价值可能超过你一年的学费。它对全组几十位同学同时提供服务。<br>
+  <strong>你的一个疏忽，可能导致所有人的实验中断、数据丢失、甚至硬件损坏。</strong><br>
+  以下规范不是你「可选的建议」——而是<strong>必须遵守的规则</strong>。</p>
+</div>
+
+<h3>📑 完整目录</h3>
+<ol>
+  <li><a href="#s1">🚨 安全红线 13 条</a> — 绝对禁止的操作清单，每条都附有真实后果说明</li>
+  <li><a href="#s2">📁 文件与磁盘</a> — 目录结构约定 · 大文件存放 · 磁盘清理 · 空间监控</li>
+  <li><a href="#s3">🖥️ GPU 使用规范</a> — 显存查询 · 指定 GPU · 多用户协调 · 长期占用礼仪</li>
+  <li><a href="#s4">⚡ 进程与资源</a> — CPU/内存 · tmux 规范 · nohup · 后台任务管理</li>
+  <li><a href="#s5">📦 环境管理</a> — conda 命名 · 不污染系统环境 · 依赖冲突避免</li>
+  <li><a href="#s6">💾 数据安全</a> — 备份策略 · 重要数据保护 · 定期清理 · 误删恢复</li>
+  <li><a href="#s7">🚀 效率提升</a> — 别名配置 · 自动化脚本 · 资源监控面板 · 日志规范</li>
+  <li><a href="#s8">🆘 应急处理</a> — OOM 处理 · 进程卡死 · 磁盘满 · 误删文件恢复</li>
+</ol>
+<p><strong>附录</strong>：<a href="#sa">A. 每日检查清单</a> · <a href="#sb">B. 安全口诀</a> · <a href="#sc">C. 快速配置模板</a></p>
+
+<h3>🎨 阅读指南</h3>
+<table>
+  <thead><tr><th>读者</th><th>必读章节</th></tr></thead>
+  <tbody>
+    <tr><td>🆕 <strong>新进实验室同学</strong></td><td>第 1 章（全部 13 条红线！）、第 2、3、5 章</td></tr>
+    <tr><td>📝 <strong>日常使用者</strong></td><td>第 3 章（GPU 规范）、第 4 章（资源管理）、第 7 章（效率）</td></tr>
+    <tr><td>🚨 <strong>遇到紧急情况</strong></td><td>直接跳第 8 章应急处理</td></tr>
+    <tr><td>👨‍🏫 <strong>管理员/导师</strong></td><td>全文 + 附录 A（检查清单）</td></tr>
+  </tbody>
+</table>
+
+
+<!-- ===== SECTION 1: 安全红线 ===== -->
+<h2 id="s1">1. 🚨 安全红线 13 条</h2>
+<blockquote class="danger"><strong>以下任何一条的违反，都可能导致服务器宕机、全组数据丢失、甚至硬件损坏。</strong><br>每一条红线后面都标注了「违反后果」——这不是吓唬你，这些都是真实发生过的事故。</blockquote>
+
+<div class="danger-box">
+<h4>🔴 红线 #1：严禁 sudo rm -rf / 或任何涉及系统目录的强制删除</h4>
+<p><strong>禁止示例</strong>：</p>
+<pre><code>sudo rm -rf /              # ☠️ 删除整个系统 → 服务器立刻变砖
+sudo rm -rf /etc/*          # ☠️ 删除所有配置文件 → 系统不可用
+sudo rm -rf /boot/*         # ☠️ 删除内核 → 无法启动，需重装系统
+sudo rm -rf /home/*         # ☠️ 删除所有用户主目录 → 全组数据灭失</code></pre>
+<p><strong>违反后果</strong>：服务器不可逆损坏，需请 IT 部门重装系统，<strong>全组停工 3-7 天</strong>，所有未备份数据永久丢失。</p>
+<p><strong>防护措施</strong>：</p>
+<ul>
+  <li>执行 <code>rm</code> 之前，养成先说一遍完整路径的习惯：「我要删除 /data/tmp/下的 old_logs」</li>
+  <li><strong>绝对禁止</strong>：在 sudo 下使用 <code>rm -rf</code> + 通配符（如 <code>rm -rf /tmp/*</code>）</li>
+  <li>推荐用 <code>trash-cli</code>（回收站工具）：<code>pip install trash-cli; trash-put file</code></li>
+</ul>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #2：严禁强制重启服务器</h4>
+<p><strong>禁止操作</strong>：</p>
+<pre><code>sudo reboot                 # ☠️ 直接重启 → 所有人的训练进程被强制中断
+sudo shutdown -r now        # ☠️ 同上
+sudo reboot -f              # ☠️ 强制重启（跳过所有优雅关闭过程，可能损坏文件系统）</code></pre>
+<p><strong>违反后果</strong>：所有同学正在运行的训练（可能已跑了几周）全部报废，文件系统可能损坏，磁盘需要 fsck 修复。</p>
+<p><strong>正确做法</strong>：如果服务器确实需要重启（如内核安全更新），必须：<br>
+① 提前 24 小时在全组群通知<br>
+② 确认所有人的训练已保存 checkpoint<br>
+③ 由<strong>管理员</strong>执行重启操作</p>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #3：严禁占满磁盘（/ 或 /home 分区）</h4>
+<p><strong>磁盘占满的危害</strong>：</p>
+<ul>
+  <li>操作系统无法写入日志 → 服务异常</li>
+  <li>SSH 无法登录（sshd 需要写日志）</li>
+  <li>数据库/调度器停止工作 → 全组无法使用</li>
+  <li>用户自己的训练 checkpoint 写入失败 → 训练白跑</li>
+</ul>
+<p><strong>违反后果</strong>：服务器不可用，需管理员介入清理，可能需物理接触服务器才能抢救。</p>
+<p><strong>防护</strong>：<code>df -h</code> 每周至少看一次；个人数据不要超过配额；不把大规模数据集直接放在 /home 下。</p>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #4：严禁修改系统级文件（除非你是管理员并清楚后果）</h4>
+<pre><code># ☠️ 禁止随意修改的文件/目录
+/etc/fstab                 # 改了可能导致无法启动
+/etc/ssh/sshd_config       # 改错可能导致所有人（包括你）无法登录
+/etc/sudoers               # 改错可能导致无法 sudo
+/boot/*                    # 内核文件——碰都不要碰
+/usr/bin/*                 # 系统命令——不要替换或删除
+/lib/*                     # 系统库——删错会导致系统命令全部不可用</code></pre>
+<p><strong>违反后果</strong>：轻则部分功能不可用，重则服务器需要重装。</p>
+<p><strong>原则</strong>：如果不确定一个文件是干什么的——<strong>不要改它。先查、先问。</strong></p>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #5：严禁用 root 跑日常任务</h4>
+<pre><code># ☠️ 危险行为
+sudo python train.py       # 脚本中的 bug 可能损坏系统
+sudo pip install xxx        # 可能覆盖系统的 Python 包
+sudo jupyter notebook       # web 服务以 root 运行 → 巨大安全漏洞
+
+# ✅ 正确做法
+python train.py             # 用普通用户权限运行
+pip install --user xxx      # 安装到用户目录</code></pre>
+<p><strong>违反后果</strong>：代码中的 bug（如无限写日志）在 root 权限下可能造成不可挽回的系统损坏。root 权限就像拿着一把上了膛的枪——<strong>没有必要时，不要拿它</strong>。</p>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #6：严禁占用全部 CPU 核心跑多进程（除非确认无人使用）</h4>
+<pre><code># ☠️ 危险行为
+python train.py --num_workers=64    # DataLoader 开 64 个进程霸占全部 CPU
+# 或
+for i in {1..100}; do python task.py &amp; done   # 一次性 fork 100 个后台任务
+
+# ✅ 正确做法
+# 先用 htop/top 确认 CPU 空闲核心数
+# DataLoader workers 不要超过 CPU 核心数的一半
+python train.py --num_workers=8</code></pre>
+<p><strong>违反后果</strong>：其他同学的 SSH 终端卡顿、训练变慢、甚至整机响应超时被误判为宕机。</p>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #7：严禁占用全部内存（RAM）</h4>
+<pre><code># ☠️ 危险行为
+import numpy as np
+huge_array = np.zeros((500000, 500000))  # 试图分配 2TB —— OOM Killer 出动
+
+# 内存耗尽 → Linux OOM Killer 随机杀进程
+# 可能杀掉别人的训练、SSH 服务、甚至数据库</code></pre>
+<p><strong>违反后果</strong>：触发 OOM Killer，随机杀掉系统中的进程——<strong>可能是你自己的，也可能是别人的关键服务</strong>。</p>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #8：严禁在共享服务器上跑死循环 / fork 炸弹</h4>
+<pre><code># ☠️ fork 炸弹（绝对禁止！）
+:(){ :|:& };:
+
+# ☠️ 无限制写文件
+while true; do echo "log" >> /home/user/huge.log; done   # → 占满磁盘</code></pre>
+<p><strong>违反后果</strong>：CPU 100% → 整机瘫痪；磁盘占满 → 服务器不可用。</p>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #9：严禁在未指定 GPU 的情况下跑大模型训练</h4>
+<pre><code># ☠️ PyTorch 默认使用 GPU 0！
+# 如果你不指定，所有人的训练都挤在 GPU 0 上，而 GPU 1-7 空着
+
+# ✅ 必须显式指定
+CUDA_VISIBLE_DEVICES=3 python train.py</code></pre>
+<p><strong>违反后果</strong>：GPU 0 被所有人挤爆（OOM），而其他 GPU 白白浪费。<strong>一台 8 卡服务器被人用成了单卡服务器</strong>。</p>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #10：严禁在 /tmp 下放重要文件</h4>
+<p><code>/tmp</code> 在大多数 Linux 系统中<strong>重启后会被清空</strong>。不要把训练 checkpoint、代码、脚本放在这里。</p>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #11：严禁长期霸占 GPU 显存不释放</h4>
+<pre><code># ☠️ 错误示范
+python train.py   # 训练跑完了，但进程没退出 → GPU 显存一直被占用
+# 或者：开着 jupyter notebook，kernel 占着 20GB 显存，三天不用
+
+# ✅ 正确做法
+# 训练结束 → 立刻退出 Python 进程
+# Jupyter 用完 → Kernel → Shutdown
+# 定期检查自己的 GPU 进程
+gpustat -apu | grep $(whoami)</code></pre>
+<p><strong>违反后果</strong>：GPU 显存被空进程占着，真正需要训练的人用不了。<strong>一周下来相当于浪费了几十小时的 GPU 时间</strong>。</p>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #12：严禁不打招呼就 kill 别人的进程</h4>
+<p>如果发现某块 GPU 被占着但利用率很低（可能是 bug），<strong>先在群里问一声</strong>。不要直接 kill。</p>
+<p><strong>正确流程</strong>：gpustat 查看 → 找到进程主人的用户名 → 在群里 @对方：「同学你的 GPU 利用率显示 0%，确认下是否还在用？」→ 对方回复后再操作。</p>
+</div>
+
+<div class="danger-box">
+<h4>🔴 红线 #13：严禁在服务器上下载盗版 / 涉密 / 违规内容</h4>
+<p>实验室服务器的 IP 通常在学校校园网内。下载盗版软件、论文代写工具、翻墙工具、涉密资料等行为可能导致<strong>学校网络中心封锁 IP</strong>，全组无法访问服务器。</p>
+</div>
+
+<!-- L2_END -->
+
