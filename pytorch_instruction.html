@@ -922,5 +922,244 @@ model = torch.compile(model)   # 一行加速！
 
 <!-- PT4_END -->
 
+<!-- ===== SECTION 9: 模型保存与部署 ===== -->
+<h2 id="s9">9. 🚀 模型保存与部署</h2>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 TorchScript（JIT 编译）</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：将 PyTorch 模型编译为独立于 Python 的序列化格式，方便在 C++/移动端部署。</p>
+
+  <h4>两种方式</h4>
+  <pre><code># 方法 1: Tracing（追踪—最常用）
+scripted_model = torch.jit.trace(model, example_input)
+scripted_model.save('model_traced.pt')
+
+# 方法 2: Scripting（脚本化—支持控制流）
+scripted_model = torch.jit.script(model)
+
+# 加载
+model = torch.jit.load('model_traced.pt')
+output = model(input_tensor)</code></pre>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div><strong>trace 的限制</strong>：tracing 会记录具体执行路径，if/for 等控制流会被"固化"。如果模型有动态控制流，用 <code>torch.jit.script()</code>。</div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 ONNX 导出（跨框架部署）</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <pre><code># 导出 ONNX
+torch.onnx.export(
+    model,                          # PyTorch 模型
+    (dummy_input,),                 # 示例输入（tuple）
+    'model.onnx',                   # 输出路径
+    input_names=['input'],
+    output_names=['output'],
+    dynamic_axes={'input': {0: 'batch'}, 'output': {0: 'batch'}},  # 动态 batch
+    opset_version=17                # ONNX opset 版本
+)
+
+# 验证 ONNX
+import onnx
+onnx_model = onnx.load('model.onnx')
+onnx.checker.check_model(onnx_model)
+
+# ONNX Runtime 推理
+import onnxruntime as ort
+session = ort.InferenceSession('model.onnx')
+output = session.run(None, {'input': input_numpy})</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 量化（INT8 推理加速）</span>
+    <span class="badges-row"><span class="badge badge-purple">进阶</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：将 float32 模型量化到 int8，推理速度大幅提升，精度损失极小（<1%）。</p>
+
+  <h4>三种量化方式</h4>
+  <table>
+    <thead><tr><th>方式</th><th>速度提升</th><th>精度</th><th>适用</th></tr></thead>
+    <tbody>
+      <tr><td><strong>动态量化</strong></td><td>~2x</td><td>好</td><td>LSTM/Transformer（只量化权重）</td></tr>
+      <tr><td><strong>静态量化</strong></td><td>~4x</td><td>好</td><td>CNN（需标定数据）</td></tr>
+      <tr><td><strong>QAT（量化感知训练）</strong></td><td>~4x</td><td>最好</td><td>精度要求高时</td></tr>
+    </tbody>
+  </table>
+  <pre><code># 动态量化（最简单）
+model_quant = torch.quantization.quantize_dynamic(
+    model, {nn.Linear}, dtype=torch.qint8
+)
+
+# 静态量化（需准备标定数据）
+model.qconfig = torch.ao.quantization.get_default_qconfig('x86')
+torch.ao.quantization.prepare(model, inplace=True)
+# ... 用标定数据跑几个 batch ...
+torch.ao.quantization.convert(model, inplace=True)</code></pre>
+</div>
+
+
+<!-- ===== SECTION 10: 常用实战模式 ===== -->
+<h2 id="s10">10. 💡 常用实战模式</h2>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 迁移学习（Transfer Learning）</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：拿 ImageNet 预训练的 backbone，替换最后的分类头，在新数据上微调。这是业界最常用的模式。</p>
+  <pre><code>from torchvision import models
+
+# 加载预训练模型
+model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
+
+# 冻结 backbone（可选）
+for param in model.parameters():
+    param.requires_grad = False
+
+# 替换最后的全连接层
+in_features = model.fc.in_features
+model.fc = nn.Linear(in_features, num_classes)   # ⚠️ 新层的 requires_grad 默认为 True
+
+# 只用新数据训练 model.fc
+optimizer = optim.Adam(model.fc.parameters(), lr=1e-3)
+
+# 或者：解冻全部，用不同的学习率
+optimizer = optim.AdamW([
+    {'params': model.conv1.parameters(), 'lr': 1e-5},
+    {'params': model.layer1.parameters(), 'lr': 1e-5},
+    {'params': model.layer2.parameters(), 'lr': 1e-4},
+    {'params': model.layer3.parameters(), 'lr': 1e-4},
+    {'params': model.layer4.parameters(), 'lr': 1e-4},
+    {'params': model.fc.parameters(),     'lr': 1e-3},  # head 用高 lr
+])</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 梯度累积（模拟大 Batch Size）</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：显存不够设大 batch_size 时，通过多次小 batch 累积梯度来模拟大 batch 的效果。</p>
+  <pre><code>accumulation_steps = 4   # 模拟 4×batch_size
+
+for i, (x, y) in enumerate(loader):
+    x, y = x.to(device), y.to(device)
+    output = model(x)
+    loss = criterion(output, y) / accumulation_steps  # ⚠️ 除以累积步数
+    loss.backward()                                     # 梯度累加，不清零
+
+    if (i + 1) % accumulation_steps == 0:
+        optimizer.step()     # 每 accumulation_steps 次才更新
+        optimizer.zero_grad()</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 常见技巧速查</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <table>
+    <thead><tr><th>技巧</th><th>说明</th><th>代码片段</th></tr></thead>
+    <tbody>
+      <tr><td><strong>权重初始化</strong></td><td>自定义层初始化</td><td><code>nn.init.xavier_uniform_(layer.weight)</code></td></tr>
+      <tr><td><strong>冻结/解冻参数</strong></td><td>控制哪些参数训练</td><td><code>param.requires_grad = False</code></td></tr>
+      <tr><td><strong>获取中间层输出</strong></td><td>做特征提取</td><td>用 forward hook：<code>layer.register_forward_hook(fn)</code></td></tr>
+      <tr><td><strong>Label Smoothing</strong></td><td>防过拟合，提升泛化</td><td><code>nn.CrossEntropyLoss(label_smoothing=0.1)</code></td></tr>
+      <tr><td><strong>EMA（指数移动平均）</strong></td><td>模型参数平滑，提升泛化</td><td><code>torch_ema</code> 库或手写</td></tr>
+      <tr><td><strong>随机种子</strong></td><td>保证可复现</td><td><code>torch.manual_seed(42)</code></td></tr>
+      <tr><td><strong>参数统计</strong></td><td>看模型大小</td><td><code>sum(p.numel() for p in model.parameters())</code></td></tr>
+      <tr><td><strong>梯度检查</strong></td><td>确认梯度正常</td><td><code>torch.autograd.gradcheck(model, input)</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ===== SECTION 11: 调试与性能分析 ===== -->
+<h2 id="s11">11. 🔍 调试与性能分析</h2>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 PyTorch Profiler</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：定位训练瓶颈（CPU/GPU wait、数据传输、kernel 效率）。</p>
+  <pre><code>from torch.profiler import profile, ProfilerActivity, schedule
+
+with profile(
+    activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+    schedule=schedule(wait=1, warmup=1, active=3, repeat=1),
+    on_trace_ready=torch.profiler.tensorboard_trace_handler('./log'),
+    record_shapes=True,
+    profile_memory=True,
+    with_stack=True
+) as prof:
+    for batch in loader:
+        train_step(batch)
+        prof.step()   # 标记 profiler 步进
+
+# 然后在终端运行: tensorboard --logdir=./log
+# 在 Chrome 打开 TensorBoard 查看 Timeline</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 TensorBoard 集成</span>
+    <span class="badges-row"><span class="badge badge-green">实用</span></span>
+  </div>
+  <pre><code>from torch.utils.tensorboard import SummaryWriter
+
+writer = SummaryWriter('runs/experiment_1')
+
+# 记录标量
+writer.add_scalar('Loss/train', train_loss, epoch)
+writer.add_scalar('Acc/val', val_acc, epoch)
+
+# 记录模型图
+writer.add_graph(model, dummy_input)
+
+# 记录直方图（权重、梯度分布）
+writer.add_histogram('fc1.weight', model.fc1.weight, epoch)
+writer.add_histogram('fc1.weight.grad', model.fc1.weight.grad, epoch)
+
+# 记录图片
+writer.add_images('samples', images[:8], epoch)
+
+# 记录 embedding
+writer.add_embedding(features, metadata=labels, label_img=images)
+
+writer.close()
+
+# 终端运行: tensorboard --logdir=runs</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 常见调试手段</span>
+    <span class="badges-row"><span class="badge badge-green">实用</span></span>
+  </div>
+  <table>
+    <thead><tr><th>检查项</th><th>代码</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>梯度是否正常</strong></td><td><code>print(param.grad)</code></td><td>None = 梯度没传到；NaN = 数值爆炸</td></tr>
+      <tr><td><strong>梯度范数</strong></td><td><code>total_norm = sum(p.grad.norm().item() for p in model.parameters())</code></td><td>突然变大→梯度爆炸</td></tr>
+      <tr><td><strong>是否有 NaN</strong></td><td><code>torch.isnan(loss)</code> / <code>torch.isnan(x).any()</code></td><td>NaN 出现立即断点排查</td></tr>
+      <tr><td><strong>异常检测模式</strong></td><td><code>torch.autograd.set_detect_anomaly(True)</code></td><td>出现 NaN 时自动打印 traceback</td></tr>
+      <tr><td><strong>显存快照</strong></td><td><code>torch.cuda.memory_summary()</code></td><td>详细显存使用报告</td></tr>
+      <tr><td><strong>OOM 排查</strong></td><td>减小 batch_size 或用 <code>del tensor; torch.cuda.empty_cache()</code></td><td>释放不再用的显存</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PT5_END -->
+
+
 
 
