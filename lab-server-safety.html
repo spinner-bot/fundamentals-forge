@@ -588,4 +588,241 @@ jobs -l</code></pre>
 
 <!-- L3_END -->
 
+<!-- ===== SECTION 5: 环境管理 ===== -->
+<h2 id="s5">5. 📦 环境管理规范</h2>
+
+<h3>5.1 Conda 环境命名与隔离</h3>
+<pre><code># ✅ 好的命名（见名知意）
+conda create -n torch-gpu-py311 python=3.11
+conda create -n project-llm python=3.10
+conda create -n tf2-gpu python=3.9
+
+# ❌ 差的命名
+conda create -n test
+conda create -n myenv
+conda create -n temp
+
+# ⚠️ 绝不污染 base 环境！
+# base 环境不要装任何项目相关的包
+# 每个项目/任务创建独立 conda 环境</code></pre>
+
+<h3>5.2 依赖管理</h3>
+<pre><code># 导出环境（给他人复现）
+conda env export --no-builds > environment.yml
+# 或精确导出（含 build 信息）
+conda env export > environment_exact.yml
+
+# pip 依赖
+pip freeze > requirements.txt
+
+# 从文件创建环境
+conda env create -f environment.yml
+pip install -r requirements.txt</code></pre>
+
+<div class="rule-box good">
+  <strong>✅ 好习惯</strong>：每个项目的 README 中注明 conda 环境名和依赖：
+  <pre><code>## 环境
+conda activate torch-gpu-py311
+# 首次使用：pip install -r requirements.txt</code></pre>
+</div>
+
+
+<!-- ===== SECTION 6: 数据安全 ===== -->
+<h2 id="s6">6. 💾 数据安全与备份</h2>
+
+<h3>6.1 备份策略</h3>
+<div class="mermaid">
+graph LR
+    CODE["💻 代码<br/>(GitHub/GitLab)"] -->|"git push<br/>（每次改动后）"| REMOTE["☁️ 远程仓库"]
+    CKPT["📦 重要 Checkpoint<br/>(best model)"] -->|"rsync<br/>（每周）"| STORAGE["🗄️ 存储服务器/<br/>个人备份盘"]
+    LOGS["📋 日志"] -->|"保留30天<br/>之后删除"| TRASH["🗑️"]
+</div>
+
+<table>
+  <thead><tr><th>数据类型</th><th>备份方式</th><th>频率</th></tr></thead>
+  <tbody>
+    <tr><td>代码</td><td>⭐ git push（GitHub/GitLab/校内 Git）</td><td>每次改动后</td></tr>
+    <tr><td>重要 checkpoint</td><td>rsync 到个人硬盘或 NAS</td><td>每周</td></tr>
+    <tr><td>修改过的配置文件</td><td>git 或手动备份到 ~/backups/</td><td>修改后</td></tr>
+    <tr><td>实验记录/笔记</td><td>云笔记 或 git 仓库</td><td>持续</td></tr>
+    <tr><td>数据集</td><td>保留原始下载链接（比备份数据本身更高效）</td><td>下载时</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <span class="callout-icon">⚠️</span>
+  <div><strong>血的教训</strong>：<br>
+  • 代码只在服务器上存着，没 push 到 git → 服务器磁盘故障 → <strong>代码永远丢失</strong><br>
+  • Checkpoint 没有备份 → 训练跑了两周，结果被自己误删 → <strong>两周白干</strong><br>
+  • <strong>记住：服务器上的数据不等于备份。磁盘会坏，人会误删。</strong></div>
+</div>
+
+<h3>6.2 误删恢复</h3>
+<pre><code># 如果文件刚被 rm 删除（且是 ext4 文件系统）
+# ① 立刻停止对该分区的一切写操作！
+# ② 尝试用 extundelete 或 testdisk 恢复
+sudo extundelete --restore-file /home/user/deleted_file.txt /dev/sda1
+
+# 但恢复成功率不是 100%。最好的保护是：
+# ✅ 代码用 git 管理
+# ✅ 重要数据定期备份
+# ✅ 用 trash-cli 替代 rm（有回收站）</code></pre>
+
+
+<!-- ===== SECTION 7: 效率提升 ===== -->
+<h2 id="s7">7. 🚀 效率提升技巧</h2>
+
+<h3>7.1 推荐别名配置（~/.bashrc）</h3>
+<pre><code># === 安全 rm（移到回收站而非直接删除）===
+alias rm='rm -i'                 # 删除前确认
+# 或装 trash-cli: pip install trash-cli; alias rm='trash-put'
+
+# === GPU 快速查看 ===
+alias gs='gpustat -apu'          # ⭐ 最常用
+alias gsw='watch -n 1 gpustat -cP'  # 实时监控
+alias ns='nvidia-smi'
+
+# === 磁盘 ===
+alias dfh='df -h'
+alias duh='du -sh * | sort -rh | head -20'
+alias mydisk='du -sh /home/$(whoami) /data/$(whoami) 2>/dev/null'
+
+# === 进程 ===
+alias myps='ps aux | grep $(whoami)'
+alias mytop='top -u $(whoami)'
+
+# === tmux ===
+alias tl='tmux ls'
+alias ta='tmux attach -t'
+alias tn='tmux new -s'
+
+# === conda ===
+alias ca='conda activate'
+alias cel='conda env list'</code></pre>
+
+<h3>7.2 训练脚本模板（含监控和安全检查）</h3>
+<pre><code>#!/bin/bash
+# train.sh — 安全的训练启动脚本模板
+set -euo pipefail
+
+# 参数
+GPU_ID=${1:-0}              # 默认 GPU 0
+BATCH_SIZE=${2:-32}
+EPOCHS=${3:-100}
+
+# 训练前检查
+echo "=== 训练前检查 ==="
+echo "GPU 状态："
+gpustat -i $GPU_ID | tail -2
+
+echo "磁盘剩余空间："
+df -h /home | tail -1
+
+# 启动训练（tmux 中）
+SESSION="train-$(date +%m%d-%H%M)"
+tmux new -d -s $SESSION \
+    "CUDA_VISIBLE_DEVICES=$GPU_ID python train.py --batch_size $BATCH_SIZE --epochs $EPOCHS 2>&1 | tee logs/train-$(date +%Y%m%d-%H%M).log"
+
+echo "训练已在 tmux session '$SESSION' 中启动"
+echo "查看：tmux attach -t $SESSION"
+echo "GPU: $GPU_ID | Batch: $BATCH_SIZE | Epochs: $EPOCHS"</code></pre>
+
+<h3>7.3 日志规范</h3>
+<pre><code># 使用时间戳命名的日志文件
+python train.py 2>&1 | tee logs/train_$(date +%Y%m%d_%H%M%S).log
+
+# 在 Python 代码中记录关键信息
+import logging, time, torch, socket
+logging.basicConfig(level=logging.INFO)
+logging.info(f"Host: {socket.gethostname()}")
+logging.info(f"GPU: {os.environ.get('CUDA_VISIBLE_DEVICES', 'auto')}")
+logging.info(f"PyTorch: {torch.__version__}, CUDA: {torch.version.cuda}")
+logging.info(f"Start time: {time.strftime('%Y-%m-%d %H:%M:%S')}")</code></pre>
+
+<h3>7.4 远程监控面板（本地查看）</h3>
+<pre><code># 在本地 ~/.bashrc 中添加函数
+function gpu-watch() {
+    ssh "$1" "watch -n 2 'echo === GPU ===; gpustat -cP; echo; echo === Top CPU ===; ps aux --sort=-%cpu | head -6'"
+}
+# 使用：gpu-watch gpu01
+
+function gpu-usage() {
+    ssh "$1" "gpustat -apu --no-header" | grep "$(whoami)"
+}
+# 使用：gpu-usage gpu01 → 只看自己的 GPU 占用</code></pre>
+
+
+<!-- ===== SECTION 8: 应急处理 ===== -->
+<h2 id="s8">8. 🆘 应急处理指南</h2>
+
+<h3>8.1 我的训练 OOM 了</h3>
+<pre><code># ① 确认 OOM
+dmesg | tail -20 | grep -i "out of memory"
+
+# ② 减小 batch_size，重跑
+# ③ 如果 batch_size 已经很小（如 2），考虑：
+#    - 用梯度累积模拟大 batch
+#    - 用混合精度训练（AMP）
+#    - 减小模型尺寸或输入分辨率
+
+# ④ 如果服务器整体内存不足（不是显存）：
+free -h                                  # 看谁占着内存
+ps aux --sort=-%mem | head -10</code></pre>
+
+<h3>8.2 进程卡死了，Ctrl+C 无效</h3>
+<pre><code># ① 找到进程 PID
+ps aux | grep $(whoami) | grep python
+
+# ② 温和终止（给进程清理机会）
+kill 12345                 # SIGTERM
+
+# ③ 如果 10 秒后还没退出，强制终止
+kill -9 12345              # 最后手段
+
+# ④ 如果是 tmux 中的进程卡死
+# 在 tmux 中：Ctrl+C 无效 → 关闭该 pane 或 kill-session</code></pre>
+
+<h3>8.3 磁盘满了</h3>
+<pre><code># ① 确认是哪个分区满了
+df -h
+
+# ② 找出自己的大文件
+du -ah /home/$(whoami) | sort -rh | head -20
+
+# ③ 快速清理
+conda clean --all                          # conda 缓存
+pip cache purge                            # pip 缓存
+find . -type d -name __pycache__ -exec rm -rf {} +  # Python 缓存
+rm -rf ~/.cache/pip/*
+journalctl --vacuum-size=200M 2>/dev/null || true  # systemd 日志
+
+# ④ 如果是别人占满了，在群里通知
+# "磁盘使用率已达 XX%，请大家清理一下不用的文件"</code></pre>
+
+<h3>8.4 服务器完全无响应（SSH 连不上）</h3>
+<pre><code># ① 先确认不是你的网络问题
+ping google.com
+
+# ② 确认不是跳板机问题
+ping 跳板机IP
+
+# ③ 确认是服务器挂了
+# → 联系管理员/导师（不要自己尝试处理）
+# → 记录故障前你的操作（帮助管理员排查原因）
+
+# ⚠️ 千万不要自己去机房按电源！让管理员处理！</code></pre>
+
+<h3>8.5 我不小心删了重要文件</h3>
+<pre><code># ① 立刻停止一切操作（尤其是写磁盘的操作）
+# ② 如果是代码 → git reflog / git checkout 恢复
+# ③ 如果是数据 → 尝试 extundelete（见6.2节）
+# ④ 如果有备份 → 从备份恢复
+# ⑤ 通知管理员寻求帮助
+
+# ⚠️ 恢复成功率与删除后继续操作的时间成反比！
+# 越早停止操作，恢复几率越高。</code></pre>
+
+<!-- L4_END -->
+
+
 
