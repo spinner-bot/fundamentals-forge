@@ -1,0 +1,1578 @@
+<!-- Part 1/6: Head + CSS + Sidebar + Hero -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LaTeX 命令对照说明书</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #f5f5f0;
+  color: #333;
+  line-height: 1.75;
+  display: flex;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+  background: linear-gradient(180deg, #1a3a1a 0%, #0d2818 100%);
+  color: #ccc; overflow-y: auto; z-index: 100;
+  padding: 24px 0; font-size: 0.9rem;
+  box-shadow: 2px 0 20px rgba(0,0,0,0.15);
+}
+.sidebar-header {
+  text-align: center; padding: 0 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px;
+}
+.sidebar-header h2 {
+  color: #fff; font-size: 1.15rem; margin-top: 8px;
+}
+.sidebar-header .lx-icon {
+  width: 48px; height: 48px; background: #008080; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 22px; color: #fff; font-weight: bold;
+}
+.sidebar-nav { padding: 0 12px; }
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 8px; color: #b0b0c0;
+  text-decoration: none; transition: all 0.2s;
+  margin-bottom: 2px;
+}
+.sidebar-nav a:hover, .sidebar-nav a.active {
+  background: rgba(255,255,255,0.08); color: #fff;
+}
+.sidebar-nav a .nav-emoji { font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0; }
+.sidebar-nav a .nav-num { font-size: 0.7rem; color: #008080; font-weight: 700; width: 20px; flex-shrink: 0; }
+.sidebar-nav .nav-section { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 16px 12px 6px; }
+.sidebar-footer {
+  text-align: center; padding: 20px; color: #666; font-size: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.08); margin-top: 20px;
+}
+
+/* ===== Main Content ===== */
+.main { margin-left: 280px; flex: 1; min-height: 100vh; }
+
+/* ===== Hero ===== */
+.hero {
+  background: linear-gradient(135deg, #1a3a1a 0%, #0d2818 40%, #008080 100%);
+  color: #fff; padding: 60px 48px 48px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero h1 { font-size: 2.8rem; font-weight: 800; position: relative; }
+.hero .subtitle { font-size: 1.15rem; opacity: 0.85; margin-top: 12px; position: relative; }
+.hero .badges { margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; }
+.hero .badges img { height: 22px; }
+
+/* ===== Content Container ===== */
+.content { max-width: 900px; margin: 0 auto; padding: 40px 48px 60px; }
+
+/* ===== Typography ===== */
+h2 {
+  font-size: 1.8rem; color: #1a3a1a; margin: 48px 0 20px;
+  padding-bottom: 10px; border-bottom: 3px solid #008080;
+  display: flex; align-items: center; gap: 10px;
+}
+h3 { font-size: 1.3rem; color: #0d2818; margin: 32px 0 14px; }
+h4 { font-size: 1.05rem; color: #555; margin: 20px 0 8px; }
+p { margin: 12px 0; }
+a { color: #008080; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code {
+  background: #fff; border: 1px solid #e0e0d8; border-radius: 4px;
+  padding: 2px 6px; font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.88em; color: #d63384;
+}
+pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 10px;
+  padding: 20px 24px; overflow-x: auto; margin: 16px 0;
+  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.88rem; line-height: 1.6;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+
+/* ===== Tables ===== */
+table {
+  width: 100%; border-collapse: collapse; margin: 16px 0;
+  border-radius: 8px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+thead { background: #1a3a1a; color: #fff; }
+th {
+  padding: 10px 14px; text-align: left; font-weight: 600;
+  font-size: 0.9rem;
+}
+td { padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+tbody tr { background: #fff; transition: background 0.15s; }
+tbody tr:hover { background: #e6f3f3; }
+tbody tr:nth-child(even) { background: #fafaf7; }
+tbody tr:nth-child(even):hover { background: #e6f3f3; }
+
+/* ===== Blockquotes / Callouts ===== */
+blockquote {
+  border-left: 4px solid #008080; background: #fff;
+  margin: 16px 0; padding: 14px 20px; border-radius: 0 8px 8px 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+blockquote p { margin: 4px 0; }
+blockquote.tip { border-left-color: #2da44e; }
+blockquote.warning { border-left-color: #bf8700; }
+blockquote.danger { border-left-color: #cf222e; }
+blockquote.info { border-left-color: #0969da; }
+
+.callout {
+  padding: 16px 20px; margin: 16px 0; border-radius: 10px;
+  display: flex; gap: 10px; align-items: flex-start;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.callout .callout-icon { font-size: 1.3rem; flex-shrink: 0; }
+.callout.note { background: #ddf4ff; border: 1px solid #b3dfff; }
+.callout.warn { background: #fff8e1; border: 1px solid #ffe082; }
+.callout.danger { background: #ffebee; border: 1px solid #ef9a9a; }
+.callout.success { background: #e8f5e9; border: 1px solid #a5d6a7; }
+
+/* ===== Mermaid ===== */
+.mermaid {
+  background: #fafaf7; border-radius: 10px; padding: 24px;
+  margin: 20px 0; text-align: center;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  overflow-x: auto;
+}
+
+/* ===== Badge tags ===== */
+.badge {
+  display: inline-block; padding: 2px 10px; border-radius: 12px;
+  font-size: 0.78rem; font-weight: 600; color: #fff;
+}
+.badge-green { background: #2da44e; }
+.badge-yellow { background: #bf8700; }
+.badge-red { background: #cf222e; }
+.badge-purple { background: #8250df; }
+.badge-blue { background: #0969da; }
+
+/* ===== Command Card ===== */
+.cmd-card {
+  background: #fff; border-radius: 12px; padding: 24px; margin: 24px 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #eee;
+  transition: box-shadow 0.2s;
+}
+.cmd-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.cmd-card .cmd-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.cmd-card .cmd-name {
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 1.25rem; font-weight: 700; color: #1a3a1a;
+  background: #f5f5f0; padding: 4px 12px; border-radius: 6px;
+}
+.cmd-card .cmd-header .badges-row { display: flex; gap: 6px; }
+.cmd-card .formula {
+  background: #fafaf7; border-left: 3px solid #008080;
+  padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0;
+  font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.9rem;
+}
+.cmd-card .one-liner { color: #666; font-style: italic; margin-bottom: 16px; }
+
+/* ===== Divider ===== */
+hr { border: none; border-top: 1px solid #e0e0d8; margin: 32px 0; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .hero { padding: 40px 24px; }
+  .hero h1 { font-size: 1.8rem; }
+  .content { padding: 24px 20px; }
+}
+</style>
+<script>
+mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'loose',
+  themeVariables: {
+    primaryColor: '#d4edda', primaryBorderColor: '#28a745',
+    secondaryColor: '#d1ecf1', secondaryBorderColor: '#17a2b8',
+    tertiaryColor: '#fff3cd', tertiaryBorderColor: '#ffc107',
+    lineColor: '#666', textColor: '#333',
+    fontSize: '14px'
+  }
+});
+</script>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="lx-icon">T<span style="font-size:0.5em;vertical-align:super;">E</span>X</div>
+    <h2>LaTeX 说明书</h2>
+    <p style="color:#888;font-size:0.8rem;">排版命令手册</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">📖 正文</div>
+    <a href="#s0"><span class="nav-num">0</span>阅读导航</a>
+    <a href="#s1"><span class="nav-num">1</span>核心概念速览</a>
+    <a href="#s2"><span class="nav-num">2</span>文档基础结构</a>
+    <a href="#s3"><span class="nav-num">3</span>文本格式与排版</a>
+    <a href="#s4"><span class="nav-num">4</span>数学公式</a>
+    <a href="#s5"><span class="nav-num">5</span>表格</a>
+    <a href="#s6"><span class="nav-num">6</span>图片与浮动体</a>
+    <a href="#s7"><span class="nav-num">7</span>交叉引用与目录</a>
+    <a href="#s8"><span class="nav-num">8</span>参考文献与引用</a>
+    <a href="#s9"><span class="nav-num">9</span>宏与自定义命令</a>
+    <a href="#s10"><span class="nav-num">10</span>常用宏包</a>
+    <a href="#s11"><span class="nav-num">11</span>实用模板</a>
+    <div class="nav-section">📎 附录</div>
+    <a href="#sa"><span class="nav-num">A</span>符号速查表</a>
+    <a href="#sb"><span class="nav-num">B</span>常见错误与解决</a>
+    <a href="#sc"><span class="nav-num">C</span>术语对照</a>
+  </nav>
+  <div class="sidebar-footer">Made with ❤️<br>持续更新中</div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+<!-- Hero -->
+<section class="hero">
+  <h1>📝 LaTeX 命令对照说明书</h1>
+  <p class="subtitle">一份优雅实用的 LaTeX 排版速查手册&emsp;——&emsp;从入门到写出漂亮的文档</p>
+  <div class="badges">
+    <img src="https://img.shields.io/badge/LaTeX-Instruction%20Manual-008080?style=for-the-badge&logo=latex&logoColor=white" alt="LaTeX Manual">
+    <img src="https://img.shields.io/badge/引擎-pdfLaTeX%20|%20XeLaTeX%20|%20LuaLaTeX-blue?style=flat-square" alt="engines">
+    <img src="https://img.shields.io/badge/语言-中文-brightgreen?style=flat-square" alt="lang">
+    <img src="https://img.shields.io/badge/更新-2025--07--10-orange?style=flat-square" alt="date">
+  </div>
+</section>
+
+<div class="content">
+<!-- PT1_END -->
+
+<!-- ===== SECTION 0: 阅读导航 ===== -->
+<h2 id="s0">🧭 阅读导航</h2>
+
+<h3>📑 完整目录</h3>
+<ol>
+  <li><a href="#s1">🗺️ 核心概念速览</a> — 编译流程 · 引擎选择 · 文件结构</li>
+  <li><a href="#s2">📐 文档基础结构</a> — <code>\documentclass</code> · 导言区 · 正文区 · 章节命令</li>
+  <li><a href="#s3">🔤 文本格式与排版</a> — 字体样式 · 字号 · 段落 · 列表 · 间距</li>
+  <li><a href="#s4">🧮 数学公式</a> — 行内公式 · 行间公式 · 多行对齐 · 矩阵 · 常用符号</li>
+  <li><a href="#s5">📊 表格</a> — <code>tabular</code> · <code>table</code> · 合并单元格 · 三线表</li>
+  <li><a href="#s6">🖼️ 图片与浮动体</a> — <code>graphicx</code> · <code>figure</code> · 子图 · 环绕排版</li>
+  <li><a href="#s7">🔗 交叉引用与目录</a> — <code>\label</code> · <code>\ref</code> · <code>\tableofcontents</code> · 超链接</li>
+  <li><a href="#s8">📚 参考文献与引用</a> — BibTeX · BibLaTeX · <code>\cite</code> · 引用格式</li>
+  <li><a href="#s9">⚙️ 宏与自定义命令</a> — <code>\newcommand</code> · <code>\newenvironment</code> · 计数器</li>
+  <li><a href="#s10">📦 常用宏包</a> — geometry · hyperref · booktabs · amsmath · tikz · listings</li>
+  <li><a href="#s11">📋 实用模板</a> — 论文 · 报告 · 简历 · 幻灯片 · 中文文档</li>
+</ol>
+<p><strong>附录</strong>：<a href="#sa">A. 符号速查表</a> · <a href="#sb">B. 常见错误与解决</a> · <a href="#sc">C. 术语对照</a></p>
+
+<h3>🎨 阅读指南</h3>
+<table>
+  <thead><tr><th>读者类型</th><th>推荐路径</th></tr></thead>
+  <tbody>
+    <tr><td>🆕 <strong>零基础新手</strong></td><td>从头顺序阅读，重点看第 1、2、3 章</td></tr>
+    <tr><td>📝 <strong>论文写作者</strong></td><td>重点看第 4（数学）、5（表格）、6（图片）、8（引用）章</td></tr>
+    <tr><td>🔧 <strong>模板修改者</strong></td><td>看第 2、9、10 章了解自定义命令和宏包</td></tr>
+    <tr><td>🚀 <strong>进阶提升</strong></td><td>阅读第 9、10、11 章和附录</td></tr>
+  </tbody>
+</table>
+
+<h3>📌 图例说明</h3>
+<table>
+  <thead><tr><th>标识</th><th>含义</th></tr></thead>
+  <tbody>
+    <tr><td>🟢 <span class="badge badge-green">基础</span></td><td>最常用，必须掌握</td></tr>
+    <tr><td>🟡 <span class="badge badge-yellow">进阶</span></td><td>常用但不必须，提升效率</td></tr>
+    <tr><td>💡</td><td>实用技巧</td></tr>
+    <tr><td>⚠️</td><td>常见陷阱 / 注意</td></tr>
+    <tr><td>📐</td><td>语法格式</td></tr>
+    <tr><td>🎬</td><td>使用场景</td></tr>
+  </tbody>
+</table>
+
+
+<!-- ===== SECTION 1: 核心概念速览 ===== -->
+<h2 id="s1">1. 🗺️ 核心概念速览</h2>
+
+<h3>1.1 什么是 LaTeX</h3>
+<blockquote>
+  LaTeX 不是一个"所见即所得"的文字处理器，而是一个<strong>基于命令的排版系统</strong>。<br>
+  你写的是带标记的纯文本（<code>.tex</code> 文件），编译器将它渲染成精美的 PDF。<br>
+  类比：LaTeX 之于文档，如同 HTML+CSS 之于网页 — 你定义<strong>结构和内容</strong>，它负责<strong>排版输出</strong>。
+</blockquote>
+
+<h3>1.2 编译流程</h3>
+<div class="mermaid">
+flowchart LR
+    A["📝 <b>.tex</b><br/>源文件<br/><i>你编写的文本+命令</i>"] -->|"latex / pdflatex / xelatex"| B["📄 <b>.pdf</b><br/>输出文档"]
+    A -->|"生成"| C["📚 <b>.aux</b><br/>辅助文件<br/><i>交叉引用信息</i>"]
+    A -->|"引用文献"| D["📖 <b>.bib</b><br/>文献数据库"]
+    D -->|"bibtex / biber"| E["📋 <b>.bbl</b><br/>格式化引用"]
+    C -->|"需要两次编译<br/>才能正确显示引用"| B
+    E --> B
+</div>
+
+<div class="callout warn">
+  <span class="callout-icon">⚠️</span>
+  <div><strong>重要</strong>：LaTeX 通常需要<strong>编译多次</strong>才能正确生成交叉引用、目录和参考文献。<br>
+  推荐流程：<code>xelatex → bibtex/biber → xelatex → xelatex</code>（共 2~4 次）。<br>
+  工具 <code>latexmk</code> 可以自动处理编译次数。</div>
+</div>
+
+<h3>1.3 引擎选择</h3>
+<table>
+  <thead><tr><th>引擎</th><th>命令</th><th>特点</th><th>适用场景</th></tr></thead>
+  <tbody>
+    <tr><td><strong>pdfLaTeX</strong></td><td><code>pdflatex</code></td><td>直接生成 PDF，不支持 UTF-8 中文</td><td>英文文档</td></tr>
+    <tr><td><strong>XeLaTeX</strong></td><td><code>xelatex</code></td><td>原生 UTF-8，支持系统字体，中文友好</td><td>⭐ 中文文档首选</td></tr>
+    <tr><td><strong>LuaLaTeX</strong></td><td><code>lualatex</code></td><td>Lua 脚本扩展，支持 UTF-8 和 OpenType</td><td>高级定制/自动化</td></tr>
+    <tr><td><strong>LaTeX → DVI</strong></td><td><code>latex</code></td><td>输出 DVI 格式（老旧，不推荐）</td><td>兼容旧文档</td></tr>
+  </tbody>
+</table>
+
+<h3>1.4 中文支持方案</h3>
+<table>
+  <thead><tr><th>方案</th><th>引擎</th><th>宏包/文档类</th><th>推荐度</th></tr></thead>
+  <tbody>
+    <tr><td><strong>ctex 文档类</strong></td><td>XeLaTeX</td><td><code>\documentclass{ctexart}</code></td><td>⭐⭐⭐ 最推荐</td></tr>
+    <tr><td><strong>ctex 宏包</strong></td><td>XeLaTeX</td><td><code>\usepackage{ctex}</code></td><td>⭐⭐ 灵活</td></tr>
+    <tr><td><strong>xeCJK</strong></td><td>XeLaTeX</td><td><code>\usepackage{xeCJK}</code></td><td>⭐ 高级控制</td></tr>
+  </tbody>
+</table>
+
+
+<!-- ===== SECTION 2: 文档基础结构 ===== -->
+<h2 id="s2">2. 📐 文档基础结构</h2>
+
+<h3>2.1 最小可编译文档</h3>
+<pre><code>% hello.tex — 最小 LaTeX 文档
+\documentclass{article}  % ① 文档类型
+
+% 导言区：加载宏包、设置参数
+\usepackage{ctex}        % 中文支持
+
+\title{我的第一篇文档}
+\author{张三}
+\date{\today}
+
+\begin{document}         % ② 正文开始
+\maketitle               % ③ 生成标题
+
+\section{引言}
+这是正文内容。
+
+\section{结论}
+\end{document}           % ④ 正文结束（之后的内容被忽略）</code></pre>
+
+<h3>2.2 文档结构四要素</h3>
+<table>
+  <thead><tr><th>部分</th><th>位置</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td>① <strong>文档类声明</strong></td><td>第 1 行</td><td>决定文档基础样式：article / report / book / ctexart / beamer</td></tr>
+    <tr><td>② <strong>导言区</strong></td><td>class 之后，begin{document} 之前</td><td>加载宏包、定义命令、设置参数</td></tr>
+    <tr><td>③ <strong>正文区</strong></td><td>begin{document} ~ end{document}</td><td>所有可见内容和结构命令</td></tr>
+    <tr><td>④ <strong>注释</strong></td><td><code>%</code> 之后到行尾</td><td>编译时被忽略，给自己看</td></tr>
+  </tbody>
+</table>
+
+<!-- 文档类 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">📐 \\documentclass</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <div class="formula">
+    <strong>📐 语法</strong>:<br>
+    \documentclass[选项]{文档类}
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：声明文档类型，决定整体排版风格和可用命令。</p>
+
+  <h4>常用文档类</h4>
+  <table>
+    <thead><tr><th>文档类</th><th>用途</th><th>特点</th></tr></thead>
+    <tbody>
+      <tr><td><code>article</code></td><td>短文、论文</td><td>无 chapter，顶层是 section</td></tr>
+      <tr><td><code>report</code></td><td>报告、学位论文</td><td>有 chapter，每章新起一页</td></tr>
+      <tr><td><code>book</code></td><td>书籍</td><td>有 chapter + part，双面排版</td></tr>
+      <tr><td><code>ctexart</code></td><td>中文短文</td><td>中文字体、间距自动配置</td></tr>
+      <tr><td><code>ctexrep</code></td><td>中文报告</td><td>中文 book 的替代</td></tr>
+      <tr><td><code>beamer</code></td><td>演示文稿（PPT）</td><td>生成 PDF 幻灯片</td></tr>
+      <tr><td><code>letter</code></td><td>信件</td><td>信件格式</td></tr>
+    </tbody>
+  </table>
+
+  <h4>常用选项（英文逗号分隔）</h4>
+  <table>
+    <thead><tr><th>选项</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td><code>12pt</code></td><td>正文字号 12pt（默认 10pt）</td></tr>
+      <tr><td><code>a4paper</code></td><td>A4 纸张（默认 letterpaper）</td></tr>
+      <tr><td><code>twocolumn</code></td><td>双栏排版</td></tr>
+      <tr><td><code>twoside</code></td><td>双面打印（奇偶页不同）</td></tr>
+      <tr><td><code>draft</code></td><td>草稿模式（图片不加载，标记过满行）</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 章节命令 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">📐 章节层次命令</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <div class="formula">
+    <strong>📐 语法</strong>:<br>
+    \section{标题}<br>
+    \section[短标题]{长标题}
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：文档的层次化结构，LaTeX 自动编号和排版。</p>
+
+  <h4>层次从高到低</h4>
+  <table>
+    <thead><tr><th>命令</th><th>层次</th><th>可用于</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><code>\part{}</code></td><td>-1</td><td>book, report</td><td>部，最高层次</td></tr>
+      <tr><td><code>\chapter{}</code></td><td>0</td><td>book, report</td><td>章</td></tr>
+      <tr><td><code>\section{}</code></td><td>1</td><td>全部</td><td>节</td></tr>
+      <tr><td><code>\subsection{}</code></td><td>2</td><td>全部</td><td>子节</td></tr>
+      <tr><td><code>\subsubsection{}</code></td><td>3</td><td>全部</td><td>子子节</td></tr>
+      <tr><td><code>\paragraph{}</code></td><td>4</td><td>全部</td><td>段落标题</td></tr>
+    </tbody>
+  </table>
+  <p>带 <code>*</code> 的版本（如 <code>\section*{}</code>）不编号，也不出现在目录中。</p>
+</div>
+
+<!-- title -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">📐 标题信息与 maketitle</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <div class="formula">
+    <strong>📐 语法</strong>:<br>
+    \title{标题}<br>
+    \author{作者}<br>
+    \date{日期}<br>
+    \maketitle
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：定义文档标题信息并在正文中生成标题区域。</p>
+  <p><code>\date{}</code> 留空则不显示日期；不写则自动打印 <code>\today</code>。多个作者用 <code>\and</code> 分隔。</p>
+</div>
+
+<!-- PT2_END -->
+
+<!-- ===== SECTION 3: 文本格式与排版 ===== -->
+<h2 id="s3">3. 🔤 文本格式与排版</h2>
+
+<!-- 字体样式 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 字体样式命令</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：LaTeX 中有两种改变字体的方式 — 命令（作用于参数）和声明（作用于之后所有文字）。</p>
+
+  <table>
+    <thead><tr><th>效果</th><th>命令（有参数）</th><th>声明（无参数）</th></tr></thead>
+    <tbody>
+      <tr><td><strong>粗体</strong></td><td><code>\textbf{文字}</code></td><td><code>{\bfseries 文字}</code></td></tr>
+      <tr><td><em>斜体</em></td><td><code>\textit{文字}</code></td><td><code>{\itshape 文字}</code></td></tr>
+      <tr><td>直立（取消斜体）</td><td><code>\textup{文字}</code></td><td><code>{\upshape 文字}</code></td></tr>
+      <tr><td><span style="font-family:monospace;">等宽/打字机</span></td><td><code>\texttt{文字}</code></td><td><code>{\ttfamily 文字}</code></td></tr>
+      <tr><td><span style="font-variant:small-caps;">小大写</span></td><td><code>\textsc{文字}</code></td><td><code>{\scshape 文字}</code></td></tr>
+      <tr><td>无衬线</td><td><code>\textsf{文字}</code></td><td><code>{\sffamily 文字}</code></td></tr>
+      <tr><td><em>强调</em></td><td><code>\emph{文字}</code></td><td>—（嵌套自动切换 upright/italic）</td></tr>
+      <tr><td>下划线</td><td><code>\underline{文字}</code></td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 字号 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 字号命令</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：LaTeX 字号是相对于文档类设定的基准字号的（如 10pt/11pt/12pt）。</p>
+
+  <table>
+    <thead><tr><th>命令</th><th>10pt 基准</th><th>11pt 基准</th><th>12pt 基准</th></tr></thead>
+    <tbody>
+      <tr><td><code>\tiny</code></td><td>5pt</td><td>6pt</td><td>6pt</td></tr>
+      <tr><td><code>\scriptsize</code></td><td>7pt</td><td>8pt</td><td>8pt</td></tr>
+      <tr><td><code>\footnotesize</code></td><td>8pt</td><td>9pt</td><td>10pt</td></tr>
+      <tr><td><code>\small</code></td><td>9pt</td><td>10pt</td><td>11pt</td></tr>
+      <tr><td><code>\normalsize</code></td><td>10pt</td><td>11pt</td><td>12pt</td></tr>
+      <tr><td><code>\large</code></td><td>12pt</td><td>12pt</td><td>14pt</td></tr>
+      <tr><td><code>\Large</code></td><td>14pt</td><td>14pt</td><td>17pt</td></tr>
+      <tr><td><code>\LARGE</code></td><td>17pt</td><td>17pt</td><td>20pt</td></tr>
+      <tr><td><code>\huge</code></td><td>20pt</td><td>20pt</td><td>25pt</td></tr>
+      <tr><td><code>\Huge</code></td><td>25pt</td><td>25pt</td><td>25pt</td></tr>
+    </tbody>
+  </table>
+  <p>这些都是<strong>声明</strong>（后面所有文字受影响），通常用花括号限制作用域：<code>{\large 大号文字}</code></p>
+</div>
+
+<!-- 段落与间距 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 段落与间距</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：LaTeX 中空行即分段，空格和缩进有精细的控制命令。</p>
+
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>新段落</strong></td><td>留一个空行</td><td>在源码中空一行即开始新段落</td></tr>
+      <tr><td><strong>强制换行</strong></td><td><code>\\</code> 或 <code>\newline</code></td><td>不开始新段落，仅换行</td></tr>
+      <tr><td><strong>新页</strong></td><td><code>\newpage</code></td><td>强制分页</td></tr>
+      <tr><td><strong>行间距</strong></td><td><code>\linespread{1.5}</code>（导言区）</td><td>设 1.5 倍行距（配合 <code>setspace</code> 宏包更佳）</td></tr>
+      <tr><td><strong>垂直间距</strong></td><td><code>\vspace{1cm}</code></td><td>插入 1cm 垂直空白</td></tr>
+      <tr><td><strong>水平间距</strong></td><td><code>\hspace{2em}</code></td><td>插入 2em 水平空白</td></tr>
+      <tr><td><strong>可拉伸间距</strong></td><td><code>\vfill</code> / <code>\hfill</code></td><td>填充剩余空间（常用于居底或分散对齐）</td></tr>
+      <tr><td><strong>缩进取消</strong></td><td><code>\noindent</code></td><td>本段首行不缩进</td></tr>
+      <tr><td><strong>全局缩进设0</strong></td><td><code>\setlength{\parindent}{0pt}</code></td><td>全文取消首行缩进</td></tr>
+      <tr><td><strong>段间距</strong></td><td><code>\setlength{\parskip}{6pt}</code></td><td>设置段落间距</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 列表 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 列表环境</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：三种标准列表环境 — 无序列表 (itemize)、有序列表 (enumerate)、描述列表 (description)。</p>
+
+  <pre><code>% 无序列表
+\begin{itemize}
+  \item 项目一
+  \item 项目二
+  \begin{itemize}
+    \item 嵌套子项
+  \end{itemize}
+\end{itemize}
+
+% 有序列表（自动编号）
+\begin{enumerate}
+  \item 第一步
+  \item 第二步
+\end{enumerate}
+
+% 描述列表（自定义标签）
+\begin{description}
+  \item[LaTeX] 一个排版系统
+  \item[Markdown] 轻量标记语言
+\end{description}</code></pre>
+
+  <p>使用 <code>enumitem</code> 宏包可以获得更强大的列表定制能力（修改标签样式、间距等）。</p>
+</div>
+
+<!-- 对齐 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 对齐环境</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：控制文本的对齐方式。</p>
+
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th></tr></thead>
+    <tbody>
+      <tr><td>居中</td><td><code>\begin{center} ... \end{center}</code> 或 <code>\centering</code></td></tr>
+      <tr><td>左对齐</td><td><code>\begin{flushleft} ... \end{flushleft}</code> 或 <code>\raggedright</code></td></tr>
+      <tr><td>右对齐</td><td><code>\begin{flushright} ... \end{flushright}</code> 或 <code>\raggedleft</code></td></tr>
+      <tr><td>单行居中</td><td><code>{\centering 居中文字 \par}</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ===== SECTION 4: 数学公式 ===== -->
+<h2 id="s4">4. 🧮 数学公式</h2>
+<blockquote class="info">LaTeX 的数学排版能力是其成为学术界标准的核心原因。需要 <code>amsmath</code> 宏包（大多数文档类已自动加载）。</blockquote>
+
+<!-- 数学模式基础 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 数学模式基础</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：数学公式写在数学模式中，分"行内公式"和"行间公式"两种。</p>
+
+  <table>
+    <thead><tr><th>类型</th><th>语法</th><th>示例</th></tr></thead>
+    <tbody>
+      <tr><td><strong>行内公式</strong></td><td><code>$ ... $</code> 或 <code>\( ... \)</code></td><td>勾股定理：<code>$a^2 + b^2 = c^2$</code></td></tr>
+      <tr><td><strong>行间公式(无编号)</strong></td><td><code>\[ ... \]</code> 或 <code>$$ ... $$</code></td><td>独占一行居中显示</td></tr>
+      <tr><td><strong>行间公式(有编号)</strong></td><td><code>\begin{equation} ... \end{equation}</code></td><td>自动编号，可用 <code>\label</code> 引用</td></tr>
+      <tr><td><strong>多行对齐(有编号)</strong></td><td><code>\begin{align} ... \end{align}</code></td><td><code>&amp;</code> 指定对齐点，<code>\\</code>换行</td></tr>
+      <tr><td><strong>多行对齐(无编号)</strong></td><td><code>\begin{align*} ... \end{align*}</code></td><td>不编号的 align</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 常用数学符号 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 常用数学符号</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+
+  <h4>希腊字母</h4>
+  <table>
+    <thead><tr><th>命令</th><th>输出</th><th>命令</th><th>输出</th><th>命令</th><th>输出</th></tr></thead>
+    <tbody>
+      <tr><td><code>\alpha</code></td><td>α</td><td><code>\beta</code></td><td>β</td><td><code>\gamma</code></td><td>γ</td></tr>
+      <tr><td><code>\delta</code></td><td>δ</td><td><code>\epsilon</code></td><td>ε</td><td><code>\theta</code></td><td>θ</td></tr>
+      <tr><td><code>\lambda</code></td><td>λ</td><td><code>\mu</code></td><td>μ</td><td><code>\pi</code></td><td>π</td></tr>
+      <tr><td><code>\sigma</code></td><td>σ</td><td><code>\phi</code></td><td>φ</td><td><code>\omega</code></td><td>ω</td></tr>
+      <tr><td><code>\Delta</code></td><td>Δ</td><td><code>\Omega</code></td><td>Ω</td><td><code>\Sigma</code></td><td>Σ</td></tr>
+    </tbody>
+  </table>
+
+  <h4>常用结构</h4>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>上标</strong></td><td><code>x^{2}</code></td><td>上标多个字符需用花括号</td></tr>
+      <tr><td><strong>下标</strong></td><td><code>x_{i}</code></td><td>如 x₁</td></tr>
+      <tr><td><strong>分数</strong></td><td><code>\frac{分子}{分母}</code></td><td>行内可用 <code>\tfrac</code>（小分数）</td></tr>
+      <tr><td><strong>根号</strong></td><td><code>\sqrt{x}</code> / <code>\sqrt[n]{x}</code></td><td>方根 / n 次方根</td></tr>
+      <tr><td><strong>求和</strong></td><td><code>\sum_{i=1}^{n}</code></td><td>行内上下标在右侧，行间在上下</td></tr>
+      <tr><td><strong>积分</strong></td><td><code>\int_{a}^{b}</code></td><td>定积分</td></tr>
+      <tr><td><strong>极限</strong></td><td><code>\lim_{x \to \infty}</code></td><td>x→∞ 时的极限</td></tr>
+      <tr><td><strong>括号</strong></td><td><code>\left( ... \right)</code></td><td>自动伸缩的括号（也支持 [] {} ||）</td></tr>
+      <tr><td><strong>点乘</strong></td><td><code>a \cdot b</code></td><td>a · b</td></tr>
+      <tr><td><strong>叉乘</strong></td><td><code>a \times b</code></td><td>a × b</td></tr>
+      <tr><td><strong>正负号</strong></td><td><code>\pm</code></td><td>±</td></tr>
+      <tr><td><strong>无穷</strong></td><td><code>\infty</code></td><td>∞</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 矩阵 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 矩阵环境</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：<code>amsmath</code> 提供了多种矩阵环境，<code>&amp;</code> 分隔列，<code>\\</code> 分隔行。</p>
+
+  <pre><code>% 无括号矩阵
+\begin{matrix}
+  a & b \\
+  c & d
+\end{matrix}
+
+% 带括号的矩阵（最常用）
+\begin{pmatrix}      % 圆括号 ( )
+  a & b \\
+  c & d
+\end{pmatrix}
+
+\begin{bmatrix}      % 方括号 [ ]
+\begin{Bmatrix}      % 花括号 { }
+\begin{vmatrix}      % 行列式 | |
+\begin{Vmatrix}      % 双竖线 || ||
+
+% 行内小矩阵
+\binom{n}{k}        % 二项式系数
+\begin{smallmatrix} ... \end{smallmatrix}</code></pre>
+</div>
+
+<!-- 常用关系与箭头 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 关系符与箭头</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+
+  <table>
+    <thead><tr><th>命令</th><th>输出</th><th>命令</th><th>输出</th></tr></thead>
+    <tbody>
+      <tr><td><code>\leq</code></td><td>≤</td><td><code>\geq</code></td><td>≥</td></tr>
+      <tr><td><code>\neq</code></td><td>≠</td><td><code>\approx</code></td><td>≈</td></tr>
+      <tr><td><code>\equiv</code></td><td>≡</td><td><code>\sim</code></td><td>∼</td></tr>
+      <tr><td><code>\subset</code></td><td>⊂</td><td><code>\supset</code></td><td>⊃</td></tr>
+      <tr><td><code>\subseteq</code></td><td>⊆</td><td><code>\in</code></td><td>∈</td></tr>
+      <tr><td><code>\forall</code></td><td>∀</td><td><code>\exists</code></td><td>∃</td></tr>
+      <tr><td><code>\rightarrow</code></td><td>→</td><td><code>\Rightarrow</code></td><td>⇒</td></tr>
+      <tr><td><code>\leftarrow</code></td><td>←</td><td><code>\Leftrightarrow</code></td><td>⇔</td></tr>
+      <tr><td><code>\mapsto</code></td><td>↦</td><td><code>\longrightarrow</code></td><td>⟶（长箭头）</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PT3_END -->
+
+<!-- ===== SECTION 5: 表格 ===== -->
+<h2 id="s5">5. 📊 表格</h2>
+
+<!-- tabular 基础 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 tabular 环境</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <div class="formula">
+    <strong>📐 语法</strong>:<br>
+    \begin{tabular}{列格式}<br>
+    ~~内容<br>
+    \end{tabular}
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：LaTeX 的核心表格环境，<code>&amp;</code> 分隔列，<code>\\</code> 分隔行。</p>
+
+  <h4>列格式说明符</h4>
+  <table>
+    <thead><tr><th>符号</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td><code>l</code></td><td>左对齐列（Left）</td></tr>
+      <tr><td><code>c</code></td><td>居中列（Center）</td></tr>
+      <tr><td><code>r</code></td><td>右对齐列（Right）</td></tr>
+      <tr><td><code>p{宽度}</code></td><td>固定宽度段落列（可自动换行）</td></tr>
+      <tr><td><code>|</code></td><td>竖线（可多次使用：<code>||</code> 双竖线）</td></tr>
+    </tbody>
+  </table>
+
+  <pre><code>% 基本三列表格
+\begin{tabular}{l|c|r}
+  左对齐 & 居中 & 右对齐 \\
+  \hline                      % 水平线
+  A      & B    & C    \\
+  D      & E    & F
+\end{tabular}</code></pre>
+</div>
+
+<!-- 三线表与 booktabs -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 三线表（booktabs 宏包）</span>
+    <span class="badges-row">
+      <span class="badge badge-yellow">进阶</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：学术论文中最推荐的表格式 — 只有顶线、表头底线、底线三条线，简洁专业。</p>
+
+  <pre><code>\usepackage{booktabs}
+
+\begin{tabular}{lcc}
+  \toprule                        % 顶线（粗）
+  项目 & 数值A & 数值B \\
+  \midrule                        % 中线（细）
+  X    & 1.23  & 4.56 \\
+  Y    & 7.89  & 0.12 \\
+  \bottomrule                     % 底线（粗）
+\end{tabular}</code></pre>
+
+  <table>
+    <thead><tr><th>命令</th><th>作用</th></tr></thead>
+    <tbody>
+      <tr><td><code>\toprule</code></td><td>表格顶部粗线</td></tr>
+      <tr><td><code>\midrule</code></td><td>表头与数据之间的细线</td></tr>
+      <tr><td><code>\bottomrule</code></td><td>表格底部粗线</td></tr>
+      <tr><td><code>\cmidrule{2-3}</code></td><td>跨列的部分横线（第 2~3 列下方）</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- table 浮动体 与 合并单元格 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 table 浮动体 / 合并单元格</span>
+    <span class="badges-row">
+      <span class="badge badge-yellow">进阶</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：<code>table</code> 环境让表格成为可自动定位、可加标题和标签的浮动体；合并单元格用 <code>\multicolumn</code> 和 <code>\multirow</code>。</p>
+
+  <pre><code>% table 浮动体（自动定位，可加标题）
+\begin{table}[htbp]           % h=here, t=top, b=bottom, p=page
+  \centering
+  \caption{表格标题}
+  \label{tab:mytable}
+  \begin{tabular}{lcr}
+    ...
+  \end{tabular}
+\end{table}
+
+% 合并列
+\multicolumn{2}{c}{跨两列居中文字}
+
+% 合并行（需 multirow 宏包）
+\usepackage{multirow}
+\multirow{2}{*}{跨两行文字}</code></pre>
+
+  <p>[htbp] 位置选项：<code>h</code>=当前位置，<code>t</code>=页顶，<code>b</code>=页底，<code>p</code>=独立页，<code>!</code>=强制尝试（如 <code>[!htbp]</code>）。</p>
+</div>
+
+
+<!-- ===== SECTION 6: 图片与浮动体 ===== -->
+<h2 id="s6">6. 🖼️ 图片与浮动体</h2>
+
+<!-- graphicx -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 graphicx 宏包</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <div class="formula">
+    <strong>📐 语法</strong>:<br>
+    \usepackage{graphicx}<br>
+    \includegraphics[选项]{图片文件名}
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：插图的标准宏包，支持 PDF/PNG/JPG/EPS 等多种格式。</p>
+
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 命令</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>基本插图</strong></td><td><code>\includegraphics{fig.pdf}</code></td><td>原尺寸插入</td></tr>
+      <tr><td><strong>按比例缩放</strong></td><td><code>\includegraphics[scale=0.5]{fig}</code></td><td>缩放到 50%</td></tr>
+      <tr><td><strong>指定宽度</strong></td><td><code>\includegraphics[width=0.8\textwidth]{fig}</code></td><td>宽度为正文宽度的 80%</td></tr>
+      <tr><td><strong>指定高度</strong></td><td><code>\includegraphics[height=5cm]{fig}</code></td><td>高度 5cm，宽度按比例</td></tr>
+      <tr><td><strong>旋转</strong></td><td><code>\includegraphics[angle=90]{fig}</code></td><td>逆时针旋转 90°</td></tr>
+      <tr><td><strong>裁剪</strong></td><td><code>\includegraphics[trim=1cm 2cm 1cm 2cm, clip]{fig}</code></td><td>裁剪四边（左 下 右 上）</td></tr>
+    </tbody>
+  </table>
+
+  <h4>图片路径设置</h4>
+  <pre><code>\graphicspath{{figures/}{images/}}  % 指定图片搜索目录（导言区）</code></pre>
+</div>
+
+<!-- figure 浮动体 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 figure 浮动体</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：<code>figure</code> 环境让图片自动寻找最佳位置，可加标题和交叉引用。</p>
+
+  <pre><code>\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{diagram.pdf}
+  \caption{系统架构图}
+  \label{fig:arch}
+\end{figure}</code></pre>
+
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div><strong>浮动体原理</strong>：LaTeX 会根据页面美观度自动决定图/表的最佳位置。如果图片总跑到文档末尾，尝试：<br>
+    ① 使用 <code>[!htbp]</code> 加强位置约束<br>
+    ② 使用 <code>placeins</code> 宏包的 <code>\FloatBarrier</code> 命令阻止浮动体跨越该位置<br>
+    ③ 使用 <code>float</code> 宏包的 <code>[H]</code> 选项强制"就在此处"</div>
+  </div>
+</div>
+
+<!-- 子图 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 子图（subcaption / subfig）</span>
+    <span class="badges-row">
+      <span class="badge badge-yellow">进阶</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：在一个 figure 中并排多个子图，每个子图可独立标注。</p>
+
+  <pre><code>\usepackage{subcaption}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{subfigure}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{fig1.pdf}
+    \caption{子图 A}
+    \label{fig:sub_a}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{fig2.pdf}
+    \caption{子图 B}
+    \label{fig:sub_b}
+  \end{subfigure}
+  \caption{总标题}
+  \label{fig:main}
+\end{figure}</code></pre>
+</div>
+
+
+<!-- ===== SECTION 7: 交叉引用与目录 ===== -->
+<h2 id="s7">7. 🔗 交叉引用与目录</h2>
+
+<!-- label ref -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 label / ref / pageref</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <div class="formula">
+    <strong>📐 语法</strong>:<br>
+    \label{前缀:名称}<br>
+    \ref{标签} / \pageref{标签}
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：LaTeX 的自动引用系统 — 给章节/公式/图/表打标签，编译后自动生成编号，永远不会对错号。</p>
+
+  <pre><code>% 打标签（紧跟在编号命令后面）
+\section{方法}\label{sec:method}
+\begin{equation}
+  E = mc^2 \label{eq:einstein}
+\end{equation}
+\begin{figure}[htbp]
+  \caption{架构图}\label{fig:arch}
+\end{figure}
+
+% 引用
+如第~\ref{sec:method} 节所述...
+由公式~\eqref{eq:einstein} 可知...   % eqref 自动加括号
+见图~\ref{fig:arch}（第~\pageref{fig:arch} 页）</code></pre>
+
+  <h4>推荐标签命名约定</h4>
+  <table>
+    <thead><tr><th>前缀</th><th>对象</th><th>示例</th></tr></thead>
+    <tbody>
+      <tr><td><code>sec:</code></td><td>章节</td><td><code>\label{sec:intro}</code></td></tr>
+      <tr><td><code>eq:</code></td><td>公式</td><td><code>\label{eq:maxwell}</code></td></tr>
+      <tr><td><code>fig:</code></td><td>图片</td><td><code>\label{fig:result}</code></td></tr>
+      <tr><td><code>tab:</code></td><td>表格</td><td><code>\label{tab:data}</code></td></tr>
+      <tr><td><code>alg:</code></td><td>算法</td><td><code>\label{alg:sort}</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 目录 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 目录生成</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：LaTeX 自动从章节命令提取标题生成目录，与交叉引用一样需要编译两次。</p>
+
+  <pre><code>% 在正文中需要的位置放置
+\tableofcontents          % 生成目录
+\listoffigures            % 生成插图目录
+\listoftables             % 生成表格目录
+
+\setcounter{tocdepth}{3}  % 控制目录深度（3=到 subsubsection）</code></pre>
+</div>
+
+<!-- hyperref -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 hyperref 宏包</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：让 PDF 中的交叉引用、目录、URL 变成可点击的超链接。几乎每个文档都该加载。</p>
+
+  <pre><code>\usepackage[colorlinks=true, linkcolor=blue, citecolor=green, urlcolor=cyan]{hyperref}
+
+% 🎬 常用选项
+% colorlinks=true     彩色链接文字（而不是方框）
+% linkcolor=blue      内部引用颜色
+% citecolor=green     文献引用颜色
+% urlcolor=cyan       URL 颜色
+% hidelinks           隐藏所有链接颜色（适合打印）
+% pdfstartview=FitH   打开 PDF 时的视图
+% bookmarks=true      生成 PDF 书签</code></pre>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div><strong>加载顺序</strong>：<code>hyperref</code> 通常是<strong>最后一个加载</strong>的宏包（少数例外如 <code>cleveref</code> 要在其后）。</div>
+  </div>
+</div>
+
+<!-- cleveref -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 cleveref 宏包（智能引用）</span>
+    <span class="badges-row">
+      <span class="badge badge-yellow">进阶</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：自动在引用编号前添加类型名称（如"第 3 节"、"图 5"），无需手动写。</p>
+
+  <pre><code>\usepackage{cleveref}   % 必须在 hyperref 之后加载
+
+\cref{sec:method}        % → "section 3" 或 "第 3 节"
+\cref{fig:arch,tab:data} % → "fig. 5 and table 2"
+
+% 中文支持
+\crefname{section}{节}{节}
+\crefname{figure}{图}{图}
+\crefname{table}{表}{表}
+\crefname{equation}{公式}{公式}</code></pre>
+</div>
+
+<!-- PT4_END -->
+
+<!-- ===== SECTION 8: 参考文献与引用 ===== -->
+<h2 id="s8">8. 📚 参考文献与引用</h2>
+
+<!-- BibTeX 基础 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 BibTeX 方式</span>
+    <span class="badges-row">
+      <span class="badge badge-green">基础</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：将文献信息存在 <code>.bib</code> 文件中，LaTeX 自动按指定格式排版引用列表。这是学术界最推荐的方式。</p>
+
+  <h4>① .bib 文件示例（references.bib）</h4>
+  <pre><code>@article{einstein1905,
+  title   = {Zur Elektrodynamik bewegter K{\"o}rper},
+  author  = {Einstein, Albert},
+  journal = {Annalen der Physik},
+  volume  = {322},
+  number  = {10},
+  pages   = {891--921},
+  year    = {1905}
+}
+
+@book{knuth1986,
+  title     = {The {\TeX}book},
+  author    = {Knuth, Donald E.},
+  year      = {1986},
+  publisher = {Addison-Wesley}
+}</code></pre>
+
+  <h4>② 在正文中使用</h4>
+  <pre><code>% 导言区
+\bibliographystyle{plain}   % 引用样式
+
+% 正文末尾（参考文献出现的位置）
+\bibliography{references}   % 引用 references.bib（不加 .bib 后缀）
+
+% 正文中引用
+爱因斯坦提出了狭义相对论~\cite{einstein1905}。</code></pre>
+
+  <h4>编译流程</h4>
+  <pre><code>xelatex main        # 第1次编译 → 生成 .aux（含引用请求）
+bibtex main         # 处理引用 → 生成 .bbl（含格式化引用列表）
+xelatex main        # 第2次 → 将引用列表嵌入文档
+xelatex main        # 第3次 → 确保交叉引用编号正确</code></pre>
+
+  <h4>常用文献类型</h4>
+  <table>
+    <thead><tr><th>类型</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><code>@article</code></td><td>期刊论文</td></tr>
+      <tr><td><code>@book</code></td><td>书籍</td></tr>
+      <tr><td><code>@inproceedings</code></td><td>会议论文</td></tr>
+      <tr><td><code>@phdthesis</code></td><td>博士论文</td></tr>
+      <tr><td><code>@misc</code></td><td>其他（网页、手册等）</td></tr>
+      <tr><td><code>@techreport</code></td><td>技术报告</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- BibLaTeX -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 BibLaTeX（现代替代）</span>
+    <span class="badges-row">
+      <span class="badge badge-yellow">进阶</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：BibLaTeX 比传统 BibTeX 更灵活强大，支持更多引用格式，定制更简单。</p>
+
+  <pre><code>% 导言区
+\usepackage[backend=biber, style=gb7714-2015]{biblatex}  % GB/T 7714 国标
+\addbibresource{references.bib}   % 声明文献文件
+
+% 正文中
+爱因斯坦提出了狭义相对论~\cite{einstein1905}。
+
+% 打印参考文献（在需要的位置）
+\printbibliography
+
+% 编译流程：xelatex → biber → xelatex → xelatex
+% 注意后端用 biber 而不是 bibtex</code></pre>
+
+  <table>
+    <thead><tr><th>常用 style</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><code>numeric</code></td><td>数字编号 [1], [2]</td></tr>
+      <tr><td><code>authoryear</code></td><td>作者-年份 (Einstein, 1905)</td></tr>
+      <tr><td><code>gb7714-2015</code></td><td>中国国家标准 GB/T 7714-2015</td></tr>
+      <tr><td><code>ieee</code></td><td>IEEE 期刊格式</td></tr>
+      <tr><td><code>apa</code></td><td>APA 心理学格式</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ===== SECTION 9: 宏与自定义命令 ===== -->
+<h2 id="s9">9. ⚙️ 宏与自定义命令</h2>
+
+<!-- newcommand -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 newcommand</span>
+    <span class="badges-row">
+      <span class="badge badge-yellow">进阶</span>
+    </span>
+  </div>
+  <div class="formula">
+    <strong>📐 语法</strong>:<br>
+    \newcommand{\命令名}[参数个数]{定义}<br>
+    \newcommand{\命令名}[参数个数][默认值]{定义}
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：自定义命令，让你用简短命令代替复杂的重复输入。</p>
+
+  <pre><code>% 无参数
+\newcommand{\R}{\mathbb{R}}       % \R → ℝ（实数集）
+
+% 有参数（#1 代表第一个参数）
+\newcommand{\pfrac}[2]{\frac{\partial #1}{\partial #2}}
+
+% 带默认值的可选参数（#1=可选, #2=必选）
+\newcommand{\vect}[2][\mathbf]{{#1{#2}}}
+% \vect{x}    → \mathbf{x}   （使用默认）
+% \vect[\bm]{x} → \bm{x}     （覆盖默认）
+
+% 使用
+\pfrac{f}{x}   % 输出 ∂f/∂x</code></pre>
+</div>
+
+<!-- newenvironment -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 newenvironment / renewcommand</span>
+    <span class="badges-row">
+      <span class="badge badge-yellow">进阶</span>
+    </span>
+  </div>
+  <div class="formula">
+    <strong>📐 语法</strong>:<br>
+    \newenvironment{环境名}[参数个数]{开始定义}{结束定义}<br>
+    \renewcommand{\已有命令}[参数个数]{新定义}
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：定义新环境和重定义已有命令。</p>
+
+  <pre><code>% 自定义环境
+\newenvironment{proof}[1][证明]   % 默认标题为"证明"
+  {\noindent\textbf{#1}:\quad}    % 开始：加粗标题
+  {\hfill $\square$\par}          % 结束：证毕符号
+
+% 重定义已有命令
+\renewcommand{\abstractname}{摘要}    % 修改摘要标题
+\renewcommand{\figurename}{图}        % 修改图标题前缀
+\renewcommand{\tablename}{表}         % 修改表标题前缀</code></pre>
+</div>
+
+<!-- 计数器 -->
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 计数器操作</span>
+    <span class="badges-row">
+      <span class="badge badge-yellow">进阶</span>
+    </span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：LaTeX 用计数器管理章节、公式、图表等的编号。</p>
+
+  <pre><code>\newcounter{myctr}                    % 创建新计数器
+\setcounter{myctr}{10}                 % 设值为 10
+\stepcounter{myctr}                    % +1
+\addtocounter{myctr}{5}               % +5
+\themyctr                              % 打印计数器值
+\arabic{myctr}                         % 阿拉伯数字输出
+\roman{myctr}                          % 小写罗马数字输出
+\Roman{myctr}                          % 大写罗马数字输出
+
+% 章节编号深度控制
+\setcounter{secnumdepth}{3}            % 编号到 subsubsection
+\setcounter{tocdepth}{2}               % 目录收录到 subsection</code></pre>
+</div>
+
+
+<!-- ===== SECTION 10: 常用宏包 ===== -->
+<h2 id="s10">10. 📦 常用宏包</h2>
+
+<blockquote class="tip">LaTeX 的威力一半来自它的宏包生态。这里列出最常用、最实用的宏包。</blockquote>
+
+<h3>10.1 必装 / 几乎必装</h3>
+<table>
+  <thead><tr><th>宏包</th><th>作用</th><th>典型用法</th></tr></thead>
+  <tbody>
+    <tr><td><code>amsmath</code></td><td>数学公式增强</td><td>提供 align、matrix、\text 等</td></tr>
+    <tr><td><code>graphicx</code></td><td>插图</td><td><code>\includegraphics</code></td></tr>
+    <tr><td><code>hyperref</code></td><td>超链接、PDF 书签</td><td>让引用可点击</td></tr>
+    <tr><td><code>geometry</code></td><td>页面边距</td><td><code>\usepackage[margin=2.5cm]{geometry}</code></td></tr>
+    <tr><td><code>ctex</code></td><td>中文支持</td><td>处理中文字体、标点、间距</td></tr>
+    <tr><td><code>booktabs</code></td><td>三线表</td><td><code>\toprule</code>、<code>\midrule</code></td></tr>
+    <tr><td><code>enumitem</code></td><td>列表定制</td><td>修改标签样式和间距</td></tr>
+    <tr><td><code>setspace</code></td><td>行距控制</td><td><code>\onehalfspacing</code>、<code>\doublespacing</code></td></tr>
+  </tbody>
+</table>
+
+<h3>10.2 排版增强</h3>
+<table>
+  <thead><tr><th>宏包</th><th>作用</th><th>典型用法</th></tr></thead>
+  <tbody>
+    <tr><td><code>xcolor</code></td><td>颜色支持</td><td><code>\textcolor{red}{红色文字}</code></td></tr>
+    <tr><td><code>tcolorbox</code></td><td>彩色文本框</td><td>好看的提示框、代码框</td></tr>
+    <tr><td><code>fancyhdr</code></td><td>自定义页眉页脚</td><td><code>\fancyhead[L]{}</code> 等</td></tr>
+    <tr><td><code>titlesec</code></td><td>自定义章节标题样式</td><td>修改 section 的字体和间距</td></tr>
+    <tr><td><code>caption</code></td><td>图表标题定制</td><td>修改标题格式和间距</td></tr>
+    <tr><td><code>subcaption</code></td><td>子图/子表</td><td>并排图表的标注</td></tr>
+    <tr><td><code>multicol</code></td><td>多栏排版</td><td><code>\begin{multicols}{3}</code></td></tr>
+    <tr><td><code>footmisc</code></td><td>脚注增强</td><td>每页重编号、符号脚注等</td></tr>
+  </tbody>
+</table>
+
+<h3>10.3 代码与算法</h3>
+<table>
+  <thead><tr><th>宏包</th><th>作用</th><th>典型用法</th></tr></thead>
+  <tbody>
+    <tr><td><code>listings</code></td><td>代码排版（语法高亮）</td><td><code>\lstset{language=Python}</code></td></tr>
+    <tr><td><code>minted</code></td><td>代码排版（Pygments 高亮，效果更好）</td><td>需 Python + Pygments，编译加 <code>-shell-escape</code></td></tr>
+    <tr><td><code>algorithm2e</code></td><td>算法伪代码</td><td>漂亮的中文算法排版</td></tr>
+    <tr><td><code>algorithmicx</code></td><td>算法伪代码（algpseudocode）</td><td>与 algorithmicx 配合使用</td></tr>
+  </tbody>
+</table>
+
+<h3>10.4 绘图</h3>
+<table>
+  <thead><tr><th>宏包</th><th>作用</th><th>典型用法</th></tr></thead>
+  <tbody>
+    <tr><td><code>tikz</code></td><td>编程式矢量绘图（瑞士军刀）</td><td><code>\begin{tikzpicture} ... \end{tikzpicture}</code></td></tr>
+    <tr><td><code>pgfplots</code></td><td>基于 tikz 的数据/函数绘图</td><td>二维曲线、三维曲面、统计图</td></tr>
+  </tbody>
+</table>
+
+<h3>10.5 其他实用宏包</h3>
+<table>
+  <thead><tr><th>宏包</th><th>作用</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>cleveref</code></td><td>智能引用（自动加类型名）</td><td>加载顺序必须在 hyperref 之后</td></tr>
+    <tr><td><code>siunitx</code></td><td>单位排版</td><td><code>\SI{9.8}{m/s^2}</code> → 9.8 m/s²</td></tr>
+    <tr><td><code>biblatex</code></td><td>现代参考文献</td><td>替代传统 BibTeX</td></tr>
+    <tr><td><code>glossaries</code></td><td>术语表/缩略词表</td><td>自动生成缩略词列表</td></tr>
+    <tr><td><code>tikz</code></td><td>TikZ 绘图</td><td>程序化绘制矢量图</td></tr>
+    <tr><td><code>beamer</code></td><td>演示文稿（幻灯片）</td><td>学术 PPT 首选</td></tr>
+    <tr><td><code>fontspec</code></td><td>OpenType 字体选择</td><td>仅 XeLaTeX/LuaLaTeX</td></tr>
+    <tr><td><code>csquotes</code></td><td>引号处理</td><td><code>\enquote{文字}</code> 自动选择正确引号</td></tr>
+  </tbody>
+</table>
+
+
+<!-- ===== SECTION 11: 实用模板 ===== -->
+<h2 id="s11">11. 📋 实用模板</h2>
+
+<h3>11.1 中文短文模板</h3>
+<pre><code>% !TEX program = xelatex
+\documentclass[12pt, a4paper]{ctexart}
+
+% === 导言区 ===
+\usepackage[margin=2.5cm]{geometry}   % 页边距
+\usepackage{amsmath}                   % 数学
+\usepackage{graphicx}                  % 插图
+\usepackage{booktabs}                  % 三线表
+\usepackage{hyperref}                  % 超链接
+
+\graphicspath{{figures/}}
+\title{论文标题}
+\author{作者姓名}
+\date{\today}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+  这是摘要内容。
+\end{abstract}
+
+\tableofcontents
+
+\section{引言}
+\section{方法}
+\section{结果}
+\section{讨论}
+\section{结论}
+
+% 参考文献
+\begin{thebibliography}{99}
+\bibitem{ref1} 作者, 《书名》, 出版社, 年份.
+\end{thebibliography}
+
+\end{document}</code></pre>
+
+<h3>11.2 Beamer 幻灯片模板</h3>
+<pre><code>% !TEX program = xelatex
+\documentclass{beamer}
+\usetheme{Madrid}        % 主题（可换：Copenhagen, Berlin, Singapore）
+\usecolortheme{default}  % 颜色主题
+
+\usepackage{ctex}
+
+\title{演示文稿标题}
+\author{作者}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{目录}
+  \tableofcontents
+\end{frame}
+
+\section{第一节}
+\begin{frame}{第一页标题}
+  \begin{itemize}
+    \item 要点一
+    \item 要点二
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{带公式}
+  勾股定理：$a^2 + b^2 = c^2$
+\end{frame}
+
+\end{document}</code></pre>
+
+<h3>11.3 常用 preamble 配置片段</h3>
+<pre><code>% --- 页面设置 ---
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing                      % 1.5 倍行距
+
+% --- 中文 ---
+\usepackage[UTF8]{ctex}
+
+% --- 数学 ---
+\usepackage{amsmath, amssymb, amsthm}
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{definition}{定义}[section]
+
+% --- 图表 ---
+\usepackage{graphicx, booktabs, subcaption}
+\graphicspath{{figures/}}
+
+% --- 代码 ---
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  numbers=left, numberstyle=\tiny,
+  frame=single, breaklines=true
+}
+
+% --- 引用 ---
+\usepackage[colorlinks=true, linkcolor=blue]{hyperref}
+\usepackage{cleveref}
+
+% --- 页眉页脚 ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead[L]{左页眉}
+\fancyhead[R]{右页眉}
+\fancyfoot[C]{\thepage}</code></pre>
+
+<!-- PT5_END -->
+
+<!-- ===== APPENDIX A: 符号速查表 ===== -->
+<h2 id="sa">A. 📋 符号速查表</h2>
+
+<h3>A.1 数学模式重音</h3>
+<table>
+  <thead><tr><th>命令</th><th>输出</th><th>命令</th><th>输出</th></tr></thead>
+  <tbody>
+    <tr><td><code>\hat{a}</code></td><td>â</td><td><code>\bar{a}</code></td><td>ā</td></tr>
+    <tr><td><code>\tilde{a}</code></td><td>ã</td><td><code>\dot{a}</code></td><td>ȧ</td></tr>
+    <tr><td><code>\vec{a}</code></td><td>⃗a</td><td><code>\widehat{abc}</code></td><td>宽帽子</td></tr>
+  </tbody>
+</table>
+
+<h3>A.2 二元运算符</h3>
+<table>
+  <thead><tr><th>命令</th><th>输出</th><th>命令</th><th>输出</th></tr></thead>
+  <tbody>
+    <tr><td><code>\pm</code></td><td>±</td><td><code>\mp</code></td><td>∓</td></tr>
+    <tr><td><code>\times</code></td><td>×</td><td><code>\div</code></td><td>÷</td></tr>
+    <tr><td><code>\cdot</code></td><td>·</td><td><code>\circ</code></td><td>∘</td></tr>
+    <tr><td><code>\cap</code></td><td>∩</td><td><code>\cup</code></td><td>∪</td></tr>
+    <tr><td><code>\vee</code></td><td>∨</td><td><code>\wedge</code></td><td>∧</td></tr>
+    <tr><td><code>\oplus</code></td><td>⊕</td><td><code>\otimes</code></td><td>⊗</td></tr>
+  </tbody>
+</table>
+
+<h3>A.3 大型运算符</h3>
+<table>
+  <thead><tr><th>命令</th><th>输出</th><th>命令</th><th>输出</th></tr></thead>
+  <tbody>
+    <tr><td><code>\sum</code></td><td>∑</td><td><code>\prod</code></td><td>∏</td></tr>
+    <tr><td><code>\int</code></td><td>∫</td><td><code>\oint</code></td><td>∮</td></tr>
+    <tr><td><code>\bigcup</code></td><td>⋃</td><td><code>\bigcap</code></td><td>⋂</td></tr>
+  </tbody>
+</table>
+
+<h3>A.4 特殊符号</h3>
+<table>
+  <thead><tr><th>命令</th><th>输出</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>\LaTeX</code></td><td>LᴬTᴇX</td><td>LaTeX 标志</td></tr>
+    <tr><td><code>\TeX</code></td><td>TᴇX</td><td>TeX 标志</td></tr>
+    <tr><td><code>\dots</code></td><td>…</td><td>省略号</td></tr>
+    <tr><td><code>\cdots</code></td><td>⋯</td><td>居中省略号</td></tr>
+    <tr><td><code>\ldots</code></td><td>…</td><td>底线省略号</td></tr>
+    <tr><td><code>\hbar</code></td><td>ℏ</td><td>约化普朗克常数</td></tr>
+    <tr><td><code>\ell</code></td><td>ℓ</td><td>手写体 l</td></tr>
+    <tr><td><code>\nabla</code></td><td>∇</td><td>梯度算子</td></tr>
+    <tr><td><code>\partial</code></td><td>∂</td><td>偏导数</td></tr>
+    <tr><td><code>\Re</code></td><td>ℜ</td><td>实部</td></tr>
+    <tr><td><code>\Im</code></td><td>ℑ</td><td>虚部</td></tr>
+  </tbody>
+</table>
+
+<h3>A.5 数学字体</h3>
+<table>
+  <thead><tr><th>命令</th><th>效果</th><th>适用</th></tr></thead>
+  <tbody>
+    <tr><td><code>\mathbb{R}</code></td><td>ℝ</td><td>黑板粗体（需 amsfonts/amssymb）</td></tr>
+    <tr><td><code>\mathcal{L}</code></td><td>ℒ</td><td>书法体（大写字母）</td></tr>
+    <tr><td><code>\mathbf{x}</code></td><td><strong>x</strong></td><td>粗体</td></tr>
+    <tr><td><code>\mathrm{d}</code></td><td>d</td><td>直立字体（微分 d 推荐）</td></tr>
+    <tr><td><code>\mathsf{x}</code></td><td>无衬线</td><td>—</td></tr>
+    <tr><td><code>\mathtt{x}</code></td><td>等宽</td><td>—</td></tr>
+    <tr><td><code>\boldsymbol{\beta}</code></td><td><strong>β</strong></td><td>粗体希腊字母（需 bm 宏包）</td></tr>
+  </tbody>
+</table>
+
+<h3>A.6 文本模式特殊符号</h3>
+<table>
+  <thead><tr><th>命令</th><th>输出</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>\textbackslash</code></td><td>\</td><td>反斜杠</td></tr>
+    <tr><td><code>\textasciitilde</code></td><td>~</td><td>波浪号</td></tr>
+    <tr><td><code>\textasciicircum</code></td><td>^</td><td>脱字符</td></tr>
+    <tr><td><code>\textregistered</code></td><td>®</td><td>注册商标</td></tr>
+    <tr><td><code>\texttrademark</code></td><td>™</td><td>商标</td></tr>
+    <tr><td><code>\copyright</code></td><td>©</td><td>版权</td></tr>
+    <tr><td><code>\pounds</code></td><td>£</td><td>英镑符号</td></tr>
+    <tr><td>`` ''</td><td>" "</td><td>英文双引号（两个反引号+两个单引号）</td></tr>
+    <tr><td>` '</td><td>' '</td><td>英文单引号</td></tr>
+  </tbody>
+</table>
+
+
+<!-- ===== APPENDIX B: 常见错误与解决 ===== -->
+<h2 id="sb">B. 🔧 常见错误与解决</h2>
+
+<table>
+  <thead><tr><th>错误信息</th><th>原因</th><th>解决方法</th></tr></thead>
+  <tbody>
+    <tr><td><code>Undefined control sequence</code></td><td>命令拼写错误或缺少宏包</td><td>检查拼写；确认已加载相应宏包</td></tr>
+    <tr><td><code>Missing $ inserted</code></td><td>在文本模式中使用了数学命令</td><td>把数学符号放到 <code>$...$</code> 中</td></tr>
+    <tr><td><code>File 'xxx.sty' not found</code></td><td>缺少宏包</td><td>用包管理器安装（如 <code>tlmgr install xxx</code>）</td></tr>
+    <tr><td><code>There were undefined references</code></td><td>标签未定义或引用名写错</td><td>检查 <code>\label</code> 和 <code>\ref</code> 名称一致；再编译一次</td></tr>
+    <tr><td><code>Overfull/Underfull hbox</code></td><td>行内容太宽/太窄，排版溢出</td><td>调整措辞，或允许更多断词（<code>microtype</code> 宏包有帮助）</td></tr>
+    <tr><td>中文不显示/乱码</td><td>引擎不支持 UTF-8</td><td>使用 XeLaTeX 编译 + ctex 宏包</td></tr>
+    <tr><td>图片不显示</td><td>路径错误或格式不支持</td><td>检查路径和扩展名；pdfLaTeX 不支持 EPS</td></tr>
+    <tr><td>引用显示 [?]</td><td>BibTeX 未编译或引用键不匹配</td><td>运行完整编译链；检查 .bib 中的引用键</td></tr>
+  </tbody>
+</table>
+
+<div class="callout note">
+  <span class="callout-icon">💡</span>
+  <div><strong>编译技巧</strong>：遇到 "undefined references" 或目录不更新，<strong>再编译一次</strong>可以解决大部分问题。用 <code>latexmk -xelatex main.tex</code> 可自动处理编译次数。</div>
+</div>
+
+
+<!-- ===== APPENDIX C: 术语对照 ===== -->
+<h2 id="sc">C. 📖 术语中英对照</h2>
+
+<table>
+  <thead><tr><th>英文</th><th>中文</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>Preamble</td><td>导言区</td><td><code>\documentclass</code> 之后、<code>\begin{document}</code> 之前的区域</td></tr>
+    <tr><td>Document Class</td><td>文档类</td><td>决定文档基础样式的定义文件（article, book, beamer…）</td></tr>
+    <tr><td>Package</td><td>宏包</td><td>扩展 LaTeX 功能的附加模块（.sty 文件）</td></tr>
+    <tr><td>Environment</td><td>环境</td><td><code>\begin{...} ... \end{...}</code> 定义的局部作用域</td></tr>
+    <tr><td>Command / Macro</td><td>命令 / 宏</td><td><code>\</code> 开头的控制序列</td></tr>
+    <tr><td>Token</td><td>令牌</td><td>TeX 语法分析的最小单元</td></tr>
+    <tr><td>Group</td><td>分组</td><td><code>{...}</code> 限定作用范围的单位</td></tr>
+    <tr><td>Float</td><td>浮动体</td><td>自动定位的图表容器（figure、table 环境）</td></tr>
+    <tr><td>Counter</td><td>计数器</td><td>管理自动编号的整型变量</td></tr>
+    <tr><td>Reference</td><td>交叉引用</td><td>用 label/ref 实现的自动编号引用</td></tr>
+    <tr><td>Bibliography</td><td>参考文献</td><td>引用列表，通常由 BibTeX/BibLaTeX 管理</td></tr>
+    <tr><td>Auxiliary File</td><td>辅助文件</td><td>.aux、.toc、.bbl 等编译中间文件</td></tr>
+    <tr><td>Engine</td><td>引擎</td><td>编译器的核心程序：TeX、pdfTeX、XeTeX、LuaTeX</td></tr>
+    <tr><td>Distribution</td><td>发行版</td><td>LaTeX 的完整套装：TeX Live（跨平台）、MiKTeX（Windows）、MacTeX（macOS）</td></tr>
+    <tr><td>Box</td><td>盒子</td><td>TeX 排版的最小矩形单元</td></tr>
+    <tr><td>Glue</td><td>胶水</td><td>可伸缩的空白间距</td></tr>
+    <tr><td>Kerning</td><td>字距调整</td><td>字符间的微调间距</td></tr>
+    <tr><td>Ligature</td><td>连字</td><td>将多个字符合并为一个字形（如 fi → ﬁ）</td></tr>
+    <tr><td>Math Mode</td><td>数学模式</td><td>排版数学公式的特殊模式（$...$ 或 \[...\]）</td></tr>
+    <tr><td>Overfull hbox</td><td>水平盒子溢出</td><td>某行文字超出右边距的警告</td></tr>
+    <tr><td>Shebang</td><td>引擎声明</td><td>文件首行的 <code>% !TEX program = xelatex</code></td></tr>
+  </tbody>
+</table>
+
+<!-- Footer -->
+<div style="text-align:center; padding: 40px 0 20px; color: #999; font-size: 0.85rem; border-top: 1px solid #e0e0d8; margin-top: 40px;">
+  <p>📝 Made with ❤️ | 持续更新中 | 欢迎补充和纠错</p>
+  <p style="margin-top:4px;">
+    <a href="https://github.com/spinner-bot/fundamentals-forge" target="_blank">GitHub</a> ·
+    <a href="#s0">返回导航</a>
+  </p>
+</div>
+
+</div>
+</main>
+</body>
+</html>
+
+
+
+
