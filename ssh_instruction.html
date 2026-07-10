@@ -1,0 +1,216 @@
+<!-- Part 1/7: Head + CSS + Sidebar + Hero -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSH 与跳板机原理与实践</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #f0f2f5; color: #333; line-height: 1.8; display: flex;
+}
+.sidebar {
+  position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+  background: linear-gradient(180deg, #0a1628 0%, #112240 100%);
+  color: #ccc; overflow-y: auto; z-index: 100;
+  padding: 24px 0; font-size: 0.9rem;
+  box-shadow: 2px 0 20px rgba(0,0,0,0.15);
+}
+.sidebar-header {
+  text-align: center; padding: 0 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 12px;
+}
+.sidebar-header h2 { color: #fff; font-size: 1.15rem; margin-top: 8px; }
+.sidebar-header .lx-icon {
+  width: 48px; height: 48px; background: linear-gradient(135deg, #64ffda, #00bcd4); border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 22px; color: #0a1628; font-weight: bold;
+}
+.sidebar-nav { padding: 0 12px; }
+.sidebar-nav a {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 8px; color: #8892b0;
+  text-decoration: none; transition: all 0.2s; margin-bottom: 2px;
+}
+.sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(100,255,218,0.08); color: #e6f1ff; }
+.sidebar-nav a .nav-emoji { font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0; }
+.sidebar-nav a .nav-num { font-size: 0.7rem; color: #64ffda; font-weight: 700; width: 20px; flex-shrink: 0; }
+.sidebar-nav .nav-section { color: #555; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 16px 12px 6px; }
+.sidebar-footer {
+  text-align: center; padding: 20px; color: #555; font-size: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.06); margin-top: 20px;
+}
+.main { margin-left: 280px; flex: 1; min-height: 100vh; }
+.hero {
+  background: linear-gradient(135deg, #0a1628 0%, #112240 40%, #00bcd4 100%);
+  color: #fff; padding: 60px 48px 48px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero h1 { font-size: 2.6rem; font-weight: 800; position: relative; }
+.hero .subtitle { font-size: 1.1rem; opacity: 0.85; margin-top: 12px; position: relative; }
+.hero .badges { margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; }
+.hero .badges img { height: 22px; }
+.content { max-width: 920px; margin: 0 auto; padding: 40px 48px 60px; }
+h2 {
+  font-size: 1.75rem; color: #0a1628; margin: 48px 0 20px;
+  padding-bottom: 10px; border-bottom: 3px solid #00bcd4;
+  display: flex; align-items: center; gap: 10px;
+}
+h3 { font-size: 1.25rem; color: #112240; margin: 32px 0 14px; }
+h4 { font-size: 1.05rem; color: #444; margin: 20px 0 8px; }
+p { margin: 12px 0; }
+a { color: #0097a7; text-decoration: none; }
+a:hover { text-decoration: underline; }
+code {
+  background: #fff; border: 1px solid #e0e0d8; border-radius: 4px;
+  padding: 2px 6px; font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.88em; color: #c7254e;
+}
+pre {
+  background: #0d1b2a; color: #a8d8ea; border-radius: 10px;
+  padding: 20px 24px; overflow-x: auto; margin: 16px 0;
+  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.86rem; line-height: 1.65;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+table {
+  width: 100%; border-collapse: collapse; margin: 16px 0;
+  border-radius: 8px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+thead { background: #0a1628; color: #e6f1ff; }
+th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.9rem; }
+td { padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+tbody tr { background: #fff; transition: background 0.15s; }
+tbody tr:hover { background: #e8f8fa; }
+tbody tr:nth-child(even) { background: #f8f9fb; }
+tbody tr:nth-child(even):hover { background: #e8f8fa; }
+blockquote {
+  border-left: 4px solid #00bcd4; background: #e8f8fa;
+  margin: 16px 0; padding: 14px 20px; border-radius: 0 8px 8px 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+blockquote p { margin: 4px 0; }
+blockquote.tip { border-left-color: #2da44e; background: #e8f5e9; }
+blockquote.warning { border-left-color: #bf8700; background: #fff8e1; }
+blockquote.danger { border-left-color: #cf222e; background: #ffebee; }
+blockquote.info { border-left-color: #0969da; background: #ddf4ff; }
+.callout {
+  padding: 16px 20px; margin: 16px 0; border-radius: 10px;
+  display: flex; gap: 10px; align-items: flex-start;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.callout .callout-icon { font-size: 1.3rem; flex-shrink: 0; }
+.callout.note { background: #ddf4ff; border: 1px solid #b3dfff; }
+.callout.warn { background: #fff8e1; border: 1px solid #ffe082; }
+.callout.danger { background: #ffebee; border: 1px solid #ef9a9a; }
+.callout.success { background: #e8f5e9; border: 1px solid #a5d6a7; }
+.mermaid {
+  background: #f8f9fb; border-radius: 10px; padding: 24px;
+  margin: 20px 0; text-align: center;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05); overflow-x: auto;
+}
+.badge {
+  display: inline-block; padding: 2px 10px; border-radius: 12px;
+  font-size: 0.78rem; font-weight: 600; color: #fff;
+}
+.badge-green { background: #2da44e; }
+.badge-yellow { background: #bf8700; }
+.badge-red { background: #cf222e; }
+.badge-purple { background: #8250df; }
+.badge-blue { background: #0969da; }
+.cmd-card {
+  background: #fff; border-radius: 12px; padding: 24px; margin: 24px 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05); border: 1px solid #eee;
+  transition: box-shadow 0.2s;
+}
+.cmd-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.cmd-card .cmd-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.cmd-card .cmd-name {
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 1.2rem; font-weight: 700; color: #0a1628;
+  background: #f0f2f5; padding: 4px 12px; border-radius: 6px;
+}
+.cmd-card .cmd-header .badges-row { display: flex; gap: 6px; }
+.cmd-card .formula {
+  background: #f8f9fb; border-left: 3px solid #00bcd4;
+  padding: 10px 16px; margin: 12px 0; border-radius: 0 6px 6px 0;
+  font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.9rem;
+}
+.cmd-card .one-liner { color: #555; font-style: italic; margin-bottom: 16px; }
+hr { border: none; border-top: 1px solid #e0e0d8; margin: 32px 0; }
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .hero { padding: 40px 24px; }
+  .hero h1 { font-size: 1.8rem; }
+  .content { padding: 24px 20px; }
+}
+</style>
+<script>
+mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'loose',
+  themeVariables: {
+    primaryColor: '#e0f2f1', primaryBorderColor: '#0097a7',
+    secondaryColor: '#e8eaf6', secondaryBorderColor: '#3f51b5',
+    tertiaryColor: '#d4edda', tertiaryBorderColor: '#28a745',
+    lineColor: '#555', textColor: '#333', fontSize: '14px'
+  }
+});
+</script>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="lx-icon">🔐</div>
+    <h2>SSH 与跳板机</h2>
+    <p style="color:#667;font-size:0.8rem;">原理 · 配置 · 实战</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">📖 正文</div>
+    <a href="#s0"><span class="nav-num">0</span>阅读导航</a>
+    <a href="#s1"><span class="nav-num">1</span>SSH 核心原理</a>
+    <a href="#s2"><span class="nav-num">2</span>密钥生成与管理</a>
+    <a href="#s3"><span class="nav-num">3</span>客户端配置</a>
+    <a href="#s4"><span class="nav-num">4</span>文件传输</a>
+    <a href="#s5"><span class="nav-num">5</span>跳板机原理</a>
+    <a href="#s6"><span class="nav-num">6</span>跳板机实战配置</a>
+    <a href="#s7"><span class="nav-num">7</span>实验室场景实战</a>
+    <a href="#s8"><span class="nav-num">8</span>端口转发与隧道</a>
+    <a href="#s9"><span class="nav-num">9</span>VS Code 远程开发</a>
+    <a href="#s10"><span class="nav-num">10</span>安全加固</a>
+    <a href="#s11"><span class="nav-num">11</span>故障排查</a>
+    <div class="nav-section">📎 附录</div>
+    <a href="#sa"><span class="nav-num">A</span>命令速查表</a>
+    <a href="#sb"><span class="nav-num">B</span>典型配置模板</a>
+    <a href="#sc"><span class="nav-num">C</span>术语对照</a>
+  </nav>
+  <div class="sidebar-footer">Made with ❤️<br>持续更新中</div>
+</aside>
+
+<main class="main">
+
+<section class="hero">
+  <h1>🔐 SSH 与跳板机：原理与实践</h1>
+  <p class="subtitle">从密码学到实验室实战&emsp;——&emsp;深入理解远程连接的一切</p>
+  <div class="badges">
+    <img src="https://img.shields.io/badge/SSH-Protocol%20Manual-00bcd4?style=for-the-badge&logo=openssh&logoColor=white" alt="SSH Manual">
+    <img src="https://img.shields.io/badge/版本-OpenSSH%209.0+-blue?style=flat-square" alt="version">
+    <img src="https://img.shields.io/badge/语言-中文-brightgreen?style=flat-square" alt="lang">
+    <img src="https://img.shields.io/badge/更新-2025--07--10-orange?style=flat-square" alt="date">
+  </div>
+</section>
+
+<div class="content">
+<!-- P1_END -->
