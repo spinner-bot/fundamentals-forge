@@ -934,5 +934,361 @@ ssh -N -L 8888:localhost:8888 -L 6006:localhost:6006 gpu01</code></pre>
 
 <!-- P4_END -->
 
+<!-- ===== SECTION 8: 端口转发与隧道 ===== -->
+<h2 id="s8">8. 🌐 端口转发与隧道</h2>
+<blockquote class="info">SSH 不仅能转发命令行 — 它可以转发<strong>任何 TCP 流量</strong>。这是做内网穿透、远程调试、安全代理的利器。</blockquote>
+
+<h3>8.1 三种转发模式对比</h3>
+<div class="mermaid">
+graph LR
+    subgraph "本地转发 -L"
+        L1["🏠 本地<br/>localhost:8080"] -->|"SSH 加密隧道"| L2["🖥️ 远程<br/>目标服务:80"]
+    end
+    subgraph "远程转发 -R"
+        R1["🖥️ 远程服务器<br/>监听 9090"] -->|"SSH 加密隧道<br/>(反向)"| R2["🏠 本地<br/>localhost:3000"]
+    end
+    subgraph "动态转发 -D"
+        D1["🏠 本地<br/>SOCKS :1080"] -->|"SSH 加密隧道"| D2["🖥️ 跳板机<br/>→ 访问任意目标"]
+    end
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 本地转发 (-L)：把远程端口"搬"到本地</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：访问你本机的 <code>localhost:某个端口</code>，就等于访问远程服务器的某个端口。最常见的用法：远程 Jupyter / Web 服务 / 数据库。</p>
+
+  <h4>格式</h4>
+  <pre><code>ssh -L [本地地址:]本地端口:目标地址:目标端口 [跳板机] 最终服务器</code></pre>
+
+  <h4>实战场景</h4>
+  <pre><code># 场景 1：访问内网服务器的 Jupyter（经典！）
+ssh -N -L 8888:localhost:8888 gpu01
+# 解释：本机 8888 → gpu01 的 localhost:8888
+
+# 场景 2：访问内网另一台机器（不是 gpu01 本身）的 Web 服务
+ssh -N -L 8080:192.168.1.50:80 gpu01
+# 解释：本机 8080 → 通过 gpu01 → 192.168.1.50:80
+
+# 场景 3：通过跳板机访问内网的 MySQL 数据库
+ssh -N -L 3306:192.168.1.100:3306 bastion
+# 然后在本地用 mysql -h 127.0.0.1 -P 3306 连接
+
+# 场景 4：同时转发多个端口
+ssh -N -L 8888:localhost:8888 -L 6006:localhost:6006 gpu01
+
+# -N 参数：不执行远程命令，只做端口转发（很重要）</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 远程转发 (-R)：把你本地服务"暴露"到远程</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：让远程服务器上的某个端口接收的请求，通过 SSH 隧道转发到你本地。常用于：让远程同事访问你本机的开发环境；或让内网服务"回连"到你的电脑。</p>
+
+  <pre><code># 场景：你本机跑了一个 Web 服务在 localhost:3000
+# 想让远程服务器 gpu01 的 9090 端口也能访问它
+
+ssh -R 9090:localhost:3000 gpu01
+# 之后在 gpu01 上访问 localhost:9090 = 你本机的 localhost:3000
+
+# ⚠️ 默认只绑定到 localhost，要让其他机器也能访问：
+# 需要在服务器端 /etc/ssh/sshd_config 设置：
+# GatewayPorts yes
+# 然后：
+ssh -R 0.0.0.0:9090:localhost:3000 gpu01
+# 这样内网其他机器也能通过 gpu01:9090 访问你本机的服务</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 动态转发 (-D)：SOCKS 代理</span>
+    <span class="badges-row"><span class="badge badge-purple">进阶</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：在你本机开一个 SOCKS5 代理端口，把浏览器/APP 的流量通过跳板机转发。相当于把你的电脑"变成"在内网中。</p>
+
+  <pre><code># 在本机开启 SOCKS 代理
+ssh -D 1080 -N bastion
+
+# 然后配置你的浏览器/应用使用 SOCKS5 代理：
+#   地址：localhost
+#   端口：1080
+#   类型：SOCKS5
+
+# 使用场景举例：
+# • 访问只能在学校内网打开的学术资源/数据库
+# • 通过实验室网络下载论文（IP 认证的期刊）
+# • 调试只能内网访问的 Web 应用
+
+# ⭐ Chrome 快捷方式（只代理当前窗口）
+# chrome --proxy-server="socks5://localhost:1080" --user-data-dir=/tmp/chrome-ssh</code></pre>
+
+  <h4>端口转发对照表</h4>
+  <table>
+    <thead><tr><th>类型</th><th>参数</th><th>数据流</th><th>最常用于</th></tr></thead>
+    <tbody>
+      <tr><td>本地转发</td><td><code>-L 本地:目标:端口</code></td><td>本地监听 → 远程目标</td><td>⭐ Jupyter、TensorBoard、数据库</td></tr>
+      <tr><td>远程转发</td><td><code>-R 远程:目标:端口</code></td><td>远程监听 → 本地目标</td><td>内网穿透、远程调试本地服务</td></tr>
+      <tr><td>动态转发</td><td><code>-D 本地端口</code></td><td>SOCKS → 远程任意目标</td><td>代理上网、访问内网资源</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ===== SECTION 9: VS Code 远程开发 ===== -->
+<h2 id="s9">9. 💻 VS Code Remote-SSH 开发</h2>
+<blockquote class="tip">Remote-SSH 让你在本地的 VS Code 里拥有远程服务器上的完整开发体验 — 代码运行在 GPU 服务器，但编辑器体验和本地一样流畅。</blockquote>
+
+<h3>9.1 基本配置（直连服务器）</h3>
+<pre><code># 1. 安装 Remote-SSH 插件（ms-vscode-remote.remote-ssh）
+
+# 2. 配置 ~/.ssh/config（同上文）
+Host gpu01
+    HostName 192.168.1.101
+    User zhang-san
+    ProxyJump bastion
+    IdentityFile ~/.ssh/id_ed25519
+
+# 3. VS Code: Ctrl+Shift+P → "Remote-SSH: Connect to Host..." → 选 gpu01
+
+# 4. 打开远程文件夹：File → Open Folder → /home/zhang-san/project</code></pre>
+
+<h3>9.2 跳板机连接（ProxyJump 自动处理）</h3>
+<pre><code># 如果你已经在 ~/.ssh/config 中配置了 ProxyJump bastion
+# VS Code Remote-SSH 会<strong>自动识别并使用跳板机</strong>，无需额外配置！
+
+# 你的 ~/.ssh/config：
+Host bastion
+    HostName 202.120.xx.xx
+    User zhang-san
+    IdentityFile ~/.ssh/id_ed25519
+
+Host gpu01
+    HostName 192.168.1.101
+    User zhang-san
+    ProxyJump bastion              # ← VS Code 自动识别
+
+# VS Code 中直接选 gpu01 连接，跳板机对你是<strong>完全透明的</strong></code></pre>
+
+<h3>9.3 常见问题</h3>
+<table>
+  <thead><tr><th>问题</th><th>解决方案</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Remote-SSH 连接超时</strong></td><td>SSH config 加 <code>ConnectTimeout 30</code>；检查 VS Code Server 能否下载</td></tr>
+    <tr><td><strong>远程插件不安装</strong></td><td>插件需在远程侧单独安装：点插件旁边的 "Install in SSH: gpu01"</td></tr>
+    <tr><td><strong>连不上跳板机</strong></td><td>先在终端 <code>ssh gpu01</code> 确认通，再排查 VS Code</td></tr>
+    <tr><td><strong>无网络无法下载 VS Code Server</strong></td><td>手动上传 vscode-server 到 <code>~/.vscode-server/</code></td></tr>
+    <tr><td><strong>远程终端字体/键盘异常</strong></td><td>在 VS Code 远程设置中调整 terminal.integrated.* 配置</td></tr>
+  </tbody>
+</table>
+
+
+<!-- ===== SECTION 10: 安全加固 ===== -->
+<h2 id="s10">10. 🛡️ 安全加固</h2>
+<blockquote class="danger">
+  SSH 暴露在公网 = 全天候被全球攻击者扫描和暴力破解。以下措施不是可选项，是<strong>必选项</strong>。
+</blockquote>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 服务端安全配置（/etc/ssh/sshd_config）</span>
+    <span class="badges-row"><span class="badge badge-red">重要</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：修改 sshd 配置后必须 <code>sudo systemctl reload sshd</code>。改之前<strong>保持另一个 SSH 窗口打开</strong>，防止把自己锁在外面！</p>
+
+  <pre><code># === 最核心的安全设置 ===
+# 禁止 root 直接 SSH 登录（用普通用户登录后 sudo）
+PermitRootLogin no
+
+# 禁用密码认证（只允许密钥登录！）
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+
+# 只允许特定用户/组登录
+AllowUsers zhang-san lisi
+AllowGroups ssh-users
+
+# 限制认证尝试次数
+MaxAuthTries 3
+
+# 空闲超时自动断开（秒）
+ClientAliveInterval 300
+ClientAliveCountMax 2
+
+# === 其他强化 ===
+# 限制同时连接数
+MaxSessions 5
+MaxStartups 10:30:100
+
+# 关闭不用的功能
+X11Forwarding no                     # 不需要 X11 就关
+AllowTcpForwarding yes               # 需要端口转发则保留
+
+# 修改后重载
+sudo systemctl reload sshd</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 fail2ban：自动封禁暴力破解 IP</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：fail2ban 监控 SSH 日志，发现某个 IP 短时间内多次认证失败 → 自动在防火墙封禁该 IP。从被动防护变为主动防御。</p>
+
+  <pre><code># 安装
+sudo apt install fail2ban
+
+# 创建本地配置（不要直接改默认配置）
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+
+# 编辑 /etc/fail2ban/jail.local，确保以下配置生效：
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 5                 # 5 次失败后封禁
+bantime = 3600               # 封禁 1 小时（单位秒）
+findtime = 600               # 10 分钟内
+ignoreip = 127.0.0.1/8 202.120.xx.xx/32  # 白名单
+
+# 启动
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+
+# 查看被禁 IP
+sudo fail2ban-client status sshd
+sudo fail2ban-client get sshd banned
+
+# 手动解封某个 IP
+sudo fail2ban-client set sshd unbanip 1.2.3.4</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 安全审计与日志</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <table>
+    <thead><tr><th>检查项</th><th>命令</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>查看登录成功记录</td><td><code>sudo grep "Accepted" /var/log/auth.log</code></td><td>谁、什么时间、从哪个 IP 登录成功</td></tr>
+      <tr><td>查看登录失败记录</td><td><code>sudo grep "Failed" /var/log/auth.log</code></td><td>暴力破解痕迹</td></tr>
+      <tr><td>查看当前登录用户</td><td><code>who</code> 或 <code>w</code></td><td>谁现在连着</td></tr>
+      <tr><td>查看历史登录</td><td><code>last</code> 或 <code>lastlog</code></td><td>所有用户的登录历史</td></tr>
+      <tr><td>踢掉某个 SSH 会话</td><td><code>sudo pkill -u username sshd</code></td><td>断开指定用户的所有 SSH</td></tr>
+      <tr><td>查看失败 IP 排行</td><td><code>sudo grep "Failed password" /var/log/auth.log | grep -oP 'from \K\S+' | sort | uniq -c | sort -rn | head</code></td><td>找出暴力破解源 IP Top 10</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 个人使用安全守则</span>
+    <span class="badges-row"><span class="badge badge-green">必读</span></span>
+  </div>
+  <table>
+    <thead><tr><th>守则</th><th>为什么</th></tr></thead>
+    <tbody>
+      <tr><td>🔑 <strong>私钥设密码（passphrase）</strong></td><td>即使私钥文件泄露，没有 passphrase 也无法使用</td></tr>
+      <tr><td>🔒 <strong>私钥永远不分享、不上传</strong></td><td>私钥 = 你的密码，泄露 = 所有部署该公钥的服务器都不安全</td></tr>
+      <tr><td>📋 <strong>不用 ForwardAgent，除非确有必要</strong></td><td>ForwardAgent 让远程服务器可以使用你本地的 ssh-agent。如果远程服务器被黑，攻击者可以<strong>冒充你</strong>登录其他机器</td></tr>
+      <tr><td>🔍 <strong>定期检查 authorized_keys</strong></td><td>确保没有你不再使用的旧公钥残留</td></tr>
+      <tr><td>🚫 <strong>不在公用电脑上存私钥</strong></td><td>实验室公用电脑上的私钥 = 所有人的私钥</td></tr>
+      <tr><td>🔄 <strong>定期更换密钥</strong></td><td>建议至少每年更换一次</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ===== SECTION 11: 故障排查 ===== -->
+<h2 id="s11">11. 🔧 故障排查</h2>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 ssh -vvv：万能调试开关</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：SSH 连接出问题时，第一个要做的不是百度/Google，而是加 <code>-vvv</code> 看详细日志。</p>
+
+  <pre><code># 基本调试（输出非常详细，包括每一步的认证过程）
+ssh -vvv user@server
+
+# 跳板机调试
+ssh -vvv -J bastion gpu01
+
+# 关键日志行解读：
+# debug1: Connecting to 192.168.1.101 [192.168.1.101] port 22.
+#   → TCP 连接成功
+# debug1: Connection established.
+#   → SSH 连接建立
+# debug1: Host 'xxx' is known and matches the ED25519 host key.
+#   → 主机密钥验证通过
+# debug1: Authentications that can continue: publickey,password
+#   → 服务器支持的认证方式
+# debug1: Trying private key: /home/user/.ssh/id_ed25519
+# debug1: Authentication succeeded (publickey).
+#   → ✅ 密钥认证成功
+
+# 如果是权限问题：
+# debug1: /home/user/.ssh/id_ed25519: bad permissions
+# debug1: Could not open authorized keys '/home/user/.ssh/authorized_keys': Permission denied
+#   → 权限错误！检查 chmod 700 .ssh 和 chmod 600 authorized_keys</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 常见错误速查与解决</span>
+    <span class="badges-row"><span class="badge badge-green">实用</span></span>
+  </div>
+  <table>
+    <thead><tr><th>错误</th><th>原因</th><th>解决方法</th></tr></thead>
+    <tbody>
+      <tr><td><code>Connection refused</code></td><td>SSH 服务未启动或端口不对</td><td>用 <code>telnet host 22</code> 测试端口；确认 sshd 在运行</td></tr>
+      <tr><td><code>Connection timed out</code></td><td>防火墙阻止、IP 不可达、网络不通</td><td>ping 测试；检查防火墙规则；检查是否在学校 VPN 里</td></tr>
+      <tr><td><code>Permission denied (publickey)</code></td><td>① 公钥未部署 ② 密钥路径错误 ③ 权限不对</td><td>确认 <code>~/.ssh/authorized_keys</code> 含公钥且权限 600</td></tr>
+      <tr><td><code>Host key verification failed</code></td><td>服务器密钥变了（可能重装系统或 MITM 攻击）</td><td>用 <code>ssh-keygen -R hostname</code> 删除旧指纹后重连</td></tr>
+      <tr><td><code>WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!</code></td><td>同上 — 主机指纹与 known_hosts 记录不一致</td><td>先确认服务器是否确实被重装过（安全渠道确认），再清理指纹</td></tr>
+      <tr><td><code>no matching host key type found</code></td><td>客户端/服务端算法不匹配（老客户端连新服务器）</td><td><code>-o HostKeyAlgorithms=+ssh-rsa</code> 或升级客户端</td></tr>
+      <tr><td><code>kex_exchange_identification: Connection closed by remote host</code></td><td>IP 被服务器 deny / 被 fail2ban 封禁</td><td>确认 IP 不在封禁列表；检查 <code>/etc/hosts.deny</code></td></tr>
+      <tr><td><code>channel 0: open failed: connect failed</code></td><td>跳板机无法转发到内网目标（ProxyJump 失败）</td><td>在跳板机上手动 <code>ssh gpu01</code> 看能否连通，排查内网可达性</td></tr>
+      <tr><td><code>Write failed: Broken pipe</code></td><td>连接在空闲一段时间后断开</td><td>加 <code>ServerAliveInterval 60</code> 到 SSH config</td></tr>
+      <tr><td>连接很快断开（几秒）</td><td>Shell 配置有误（.bashrc 中有 exit）</td><td>检查远程的 <code>~/.bashrc</code>、<code>~/.profile</code> 中是否有 exit</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 连接超时排查流程</span>
+    <span class="badges-row"><span class="badge badge-green">实用</span></span>
+  </div>
+  <pre><code># 1. 确认网络可达
+ping 202.120.xx.xx                  # 能通 = 网络层 OK
+
+# 2. 确认端口开放
+nc -zv 202.120.xx.xx 22             # Connection succeeded! = 端口 OK
+# 或
+telnet 202.120.xx.xx 22             # 看到 SSH-2.0-OpenSSH... = 端口 OK
+
+# 3. 带详细日志连接
+ssh -vvv user@202.120.xx.xx         # 看出错在哪一步
+
+# 4. 如果在学校外，先确保装了 VPN 且能连到学校网络
+# 5. 如果是跳板机模式，先测试能不能直接连跳板机
+ssh bastion                         # 第一跳能通？
+# 6. 跳板机能通，那从跳板机直接试内网
+ssh bastion "nc -zv 192.168.1.101 22"  # 跳板机能连内网吗？
+
+# 7. 查看服务器日志
+sudo tail -f /var/log/auth.log     # 实时看认证日志
+sudo journalctl -u ssh -f           # systemd 的 SSH 日志</code></pre>
+</div>
+
+<!-- P5_END -->
+
+
 
 
