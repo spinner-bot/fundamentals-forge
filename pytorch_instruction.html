@@ -445,3 +445,226 @@ for epoch in range(10):
 
 <!-- PT2_END -->
 
+<!-- ===== SECTION 3: 自动求导 ===== -->
+<h2 id="s3">3. 📐 自动求导 (Autograd)</h2>
+<blockquote class="info">PyTorch 的自动求导引擎是所有神经网络训练的基石。它在后台构建计算图，<code>backward()</code> 时自动计算所有参数的梯度。</blockquote>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 梯度追踪与计算</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 代码</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>开启梯度追踪</strong></td><td><code>x = torch.tensor([2.0], requires_grad=True)</code></td><td>创建时指定</td></tr>
+      <tr><td><strong>稍后开启</strong></td><td><code>x.requires_grad_(True)</code></td><td>下划线后缀 = in-place 修改</td></tr>
+      <tr><td><strong>反向传播</strong></td><td><code>loss.backward()</code></td><td>标量调用，计算所有 requires_grad=True 的梯度</td></tr>
+      <tr><td><strong>获取梯度</strong></td><td><code>x.grad</code></td><td>计算后的梯度值</td></tr>
+      <tr><td><strong>梯度清零</strong></td><td><code>optimizer.zero_grad()</code></td><td>⭐ 每个训练 step 前必须清零</td></tr>
+      <tr><td><strong>手动清零</strong></td><td><code>x.grad.zero_()</code></td><td>手动清零某个张量的梯度</td></tr>
+      <tr><td><strong>禁止梯度追踪</strong></td><td><code>with torch.no_grad():</code></td><td>⭐ 推理/评估时必须用，省显存+加速</td></tr>
+      <tr><td><strong>分离计算图</strong></td><td><code>x.detach()</code></td><td>返回一个新张量，与计算图断开</td></tr>
+      <tr><td><strong>梯度裁剪</strong></td><td><code>torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)</code></td><td>防止梯度爆炸（RNN 常用）</td></tr>
+      <tr><td><strong>计算梯度范数</strong></td><td><code>torch.nn.utils.clip_grad_norm_</code> 不裁剪只计算</td><td>监控梯度是否正常</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 关键概念详解</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <h4>requires_grad 传播规则</h4>
+  <pre><code>a = torch.randn(3, requires_grad=True)
+b = a * 2           # b.requires_grad → True（继承）
+c = b.detach()      # c.requires_grad → False（断开）
+d = c + 1           # d.requires_grad → False</code></pre>
+
+  <h4>no_grad vs eval()</h4>
+  <table>
+    <thead><tr><th>操作</th><th>作用</th><th>何时用</th></tr></thead>
+    <tbody>
+      <tr><td><code>torch.no_grad()</code></td><td>禁用 autograd 图构建</td><td>推理、验证、评估（省显存）</td></tr>
+      <tr><td><code>model.eval()</code></td><td>设置模型为评估模式</td><td>影响 Dropout（关闭）、BatchNorm（用全局统计）</td></tr>
+      <tr><td><code>model.train()</code></td><td>设置模型为训练模式</td><td>恢复正常训练行为</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div><strong>常见陷阱</strong>：验证/推理时两个都要用 — <code>model.eval()</code> 切换行为，<code>torch.no_grad()</code> 关闭梯度记录。只用一个是不够的！</div>
+  </div>
+</div>
+
+
+<!-- ===== SECTION 4: 数据加载 ===== -->
+<h2 id="s4">4. 📦 数据加载</h2>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 Dataset &amp; DataLoader</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：<code>Dataset</code> 定义"怎么读取一个样本"，<code>DataLoader</code> 负责"如何批量、多线程地喂给模型"。</p>
+
+  <h4>内置 TensorDataset</h4>
+  <pre><code>from torch.utils.data import DataLoader, TensorDataset
+
+X = torch.randn(1000, 28, 28)     # 1000 个样本
+y = torch.randint(0, 10, (1000,))
+
+dataset = TensorDataset(X, y)
+loader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4)</code></pre>
+
+  <h4>自定义 Dataset（模板）</h4>
+  <pre><code>from torch.utils.data import Dataset
+
+class MyDataset(Dataset):
+    def __init__(self, data_dir, transform=None):
+        self.data = ...                         # 加载文件列表或数据
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        x = self.data[idx]                      # 读取第 idx 个样本
+        if self.transform:
+            x = self.transform(x)               # 可选的数据增强
+        return x, label</code></pre>
+
+  <h4>DataLoader 关键参数</h4>
+  <table>
+    <thead><tr><th>参数</th><th>默认</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><code>batch_size</code></td><td>1</td><td>每批样本数</td></tr>
+      <tr><td><code>shuffle</code></td><td>False</td><td>每个 epoch 开始前打乱数据</td></tr>
+      <tr><td><code>num_workers</code></td><td>0</td><td>多进程加载（一般设为 CPU 核心数/2）</td></tr>
+      <tr><td><code>drop_last</code></td><td>False</td><td>丢弃最后不完整的 batch（BN 需要固定 batch_size 时设 True）</td></tr>
+      <tr><td><code>pin_memory</code></td><td>False</td><td>锁页内存，加速 CPU→GPU 传输</td></tr>
+      <tr><td><code>collate_fn</code></td><td>自动堆叠</td><td>自定义批次拼接逻辑（变长序列时常用）</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 数据增强 (torchvision.transforms)</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <pre><code>from torchvision import transforms
+
+train_transform = transforms.Compose([
+    transforms.RandomResizedCrop(224),
+    transforms.RandomHorizontalFlip(p=0.5),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2),
+    transforms.ToTensor(),                             # [0,255]→[0,1]，HWC→CHW
+    transforms.Normalize(mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225])
+])
+
+val_transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225])
+])</code></pre>
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <div><strong>ImageNet 标准化</strong>：使用预训练模型时，必须用对应的 mean/std 做 Normalize。上例数值是 ImageNet 标准值。</div>
+  </div>
+</div>
+
+
+<!-- ===== SECTION 5: 网络层 ===== -->
+<h2 id="s5">5. 🧠 网络层 nn.Module</h2>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 nn.Module 模板</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：所有神经网络的基类。<code>__init__</code> 中定义层，<code>forward</code> 中定义前向逻辑。</p>
+  <pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class MyNet(nn.Module):
+    def __init__(self, in_dim, hidden_dim, num_classes):
+        super().__init__()
+        self.fc1 = nn.Linear(in_dim, hidden_dim)
+        self.bn = nn.BatchNorm1d(hidden_dim)
+        self.dropout = nn.Dropout(0.3)
+        self.fc2 = nn.Linear(hidden_dim, num_classes)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.bn(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+        x = self.fc2(x)
+        return x
+
+model = MyNet(784, 256, 10)
+print(model)  # 打印完整结构
+print(f"参数量: {sum(p.numel() for p in model.parameters()):,}")</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 常用层速查</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <table>
+    <thead><tr><th>分类</th><th>层</th><th>核心参数</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="2"><strong>全连接</strong></td><td><code>nn.Linear(in, out)</code></td><td>输入/输出维度</td></tr>
+      <tr><td><code>nn.Identity()</code></td><td>占位层（不做任何转换）</td></tr>
+      <tr><td rowspan="3"><strong>卷积</strong></td><td><code>nn.Conv2d(in_c, out_c, k, s, p)</code></td><td>输入/输出通道、卷积核尺寸、步长、填充</td></tr>
+      <tr><td><code>nn.ConvTranspose2d(...)</code></td><td>转置卷积（上采样）</td></tr>
+      <tr><td><code>nn.MaxPool2d(k)</code> / <code>nn.AdaptiveAvgPool2d((1,1))</code></td><td>池化（后者自动适配到目标尺寸）</td></tr>
+      <tr><td rowspan="2"><strong>RNN</strong></td><td><code>nn.LSTM(in, hidden, layers)</code></td><td>输入维度、隐藏维度、层数</td></tr>
+      <tr><td><code>nn.GRU(in, hidden, layers)</code></td><td>参数更少，训练更快</td></tr>
+      <tr><td><strong>Transformer</strong></td><td><code>nn.TransformerEncoderLayer(d_model, nhead)</code></td><td>模型维度、注意力头数</td></tr>
+      <tr><td rowspan="3"><strong>归一化</strong></td><td><code>nn.BatchNorm1d/2d(num_features)</code></td><td>批归一化</td></tr>
+      <tr><td><code>nn.LayerNorm(normalized_shape)</code></td><td>层归一化（Transformer 标配）</td></tr>
+      <tr><td><code>nn.GroupNorm(num_groups, num_channels)</code></td><td>组归一化（小 batch_size 时替代 BN）</td></tr>
+      <tr><td rowspan="2"><strong>正则化</strong></td><td><code>nn.Dropout(p=0.5)</code></td><td>随机失活</td></tr>
+      <tr><td><code>nn.Dropout2d(p=0.5)</code></td><td>整通道随机失活（卷积用）</td></tr>
+      <tr><td rowspan="2"><strong>激活</strong></td><td><code>nn.ReLU()</code> / <code>F.relu()</code></td><td>ReLU，注意 <code>inplace=True</code> 可省内存</td></tr>
+      <tr><td><code>nn.GELU()</code> / <code>nn.SiLU()</code></td><td>Transformer 常用激活</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 Sequential / ModuleList</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <pre><code># Sequential — 顺序执行的层
+model = nn.Sequential(
+    nn.Conv2d(3, 64, 3, padding=1),
+    nn.ReLU(),
+    nn.Conv2d(64, 128, 3, padding=1),
+    nn.ReLU(),
+    nn.AdaptiveAvgPool2d((1, 1)),
+    nn.Flatten(),
+    nn.Linear(128, 10)
+)
+
+# 也可以命名
+model = nn.Sequential(
+    nn.Sequential(
+        ('conv1', nn.Conv2d(3, 64, 3)),
+        ('relu1', nn.ReLU()),
+    )
+)
+
+# ModuleList — 存储层列表（参数会被正确注册）
+layers = nn.ModuleList([nn.Linear(10, 10) for _ in range(5)])
+x = layers[0](x)  # 需手动调用</code></pre>
+</div>
+
+<!-- PT3_END -->
+
+
