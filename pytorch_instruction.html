@@ -214,3 +214,234 @@ mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'loose',
 
 <div class="content">
 <!-- PT1_END -->
+
+<!-- ===== SECTION 0: 阅读导航 ===== -->
+<h2 id="s0">🧭 阅读导航</h2>
+<h3>📑 完整目录</h3>
+<ol>
+  <li><a href="#s1">🗺️ 核心概念速览</a> — 张量 · 自动求导 · 计算图 · 动态图 vs 静态图</li>
+  <li><a href="#s2">🧊 张量基础</a> — 创建 · 索引切片 · 变形 · 数学运算 · 设备管理</li>
+  <li><a href="#s3">📐 自动求导</a> — <code>autograd</code> · <code>backward()</code> · 梯度清零 · <code>detach()</code></li>
+  <li><a href="#s4">📦 数据加载</a> — <code>Dataset</code> · <code>DataLoader</code> · 数据增强 · 自定义数据集</li>
+  <li><a href="#s5">🧠 网络层 nn.Module</a> — <code>Linear</code> · <code>Conv2d</code> · <code>RNN/LSTM</code> · <code>Transformer</code> · <code>Sequential</code></li>
+  <li><a href="#s6">🎯 损失函数与优化器</a> — <code>CrossEntropyLoss</code> · <code>Adam</code> · <code>SGD</code> · <code>lr_scheduler</code></li>
+  <li><a href="#s7">🏋️ 训练与评估</a> — 训练循环 · 验证 · Early Stopping · 保存/加载 checkpoint</li>
+  <li><a href="#s8">⚡ GPU 加速</a> — CUDA · 混合精度 · 多GPU · <code>torch.compile()</code></li>
+  <li><a href="#s9">🚀 模型保存与部署</a> — <code>state_dict</code> · TorchScript · ONNX · 量化</li>
+  <li><a href="#s10">💡 常用实战模式</a> — 迁移学习 · 微调 · 分布式训练 · 混合精度</li>
+  <li><a href="#s11">🔍 调试与性能分析</a> — Profiler · TensorBoard · 梯度检查 · 内存分析</li>
+</ol>
+<p><strong>附录</strong>：<a href="#sa">A. API速查表</a> · <a href="#sb">B. 常见错误与解决</a> · <a href="#sc">C. 术语对照</a></p>
+
+<h3>🎨 阅读指南</h3>
+<table>
+  <thead><tr><th>读者类型</th><th>推荐路径</th></tr></thead>
+  <tbody>
+    <tr><td>🆕 <strong>零基础新手</strong></td><td>顺序阅读，重点看第 1、2、3、5、7 章</td></tr>
+    <tr><td>📝 <strong>日常使用者</strong></td><td>第 2、5、6、7 章作为案头速查</td></tr>
+    <tr><td>🔧 <strong>遇到问题</strong></td><td>跳到附录 B，或按目录关键词定位</td></tr>
+    <tr><td>🚀 <strong>进阶提升</strong></td><td>阅读第 8、9、10、11 章了解生产级实践</td></tr>
+  </tbody>
+</table>
+
+
+<!-- ===== SECTION 1: 核心概念速览 ===== -->
+<h2 id="s1">1. 🗺️ 核心概念速览</h2>
+
+<h3>1.1 PyTorch 是什么</h3>
+<blockquote>
+  PyTorch 是当前最流行的<strong>深度学习框架</strong>之一，由 Meta AI 开发维护。核心特点：<br>
+  • <strong>动态计算图</strong>（Define-by-Run）— 每次前向传播都可以构建不同的图，调试友好<br>
+  • <strong>Pythonic</strong> — 与 NumPy 高度相似，无缝融入 Python 生态<br>
+  • <strong>强大的 GPU 加速</strong> — 一行代码在 CPU/GPU 间切换<br>
+  • <strong>丰富的生态系统</strong> — torchvision, torchaudio, torchtext, HuggingFace, PyTorch Lightning
+</blockquote>
+
+<h3>1.2 核心抽象层次</h3>
+<div class="mermaid">
+graph TD
+    TENSOR["🧊 <b>torch.Tensor</b><br/>张量：多维数组 + 梯度<br/><i>类似 NumPy ndarray，但可跑在 GPU 上</i>"]
+    AUTOGRAD["📐 <b>torch.autograd</b><br/>自动求导引擎<br/><i>记录每一步操作，反向传播时自动算梯度</i>"]
+    NN["🧠 <b>torch.nn</b><br/>神经网络模块<br/><i>Layer、Loss、Parameter 的集合</i>"]
+    OPTIM["🎯 <b>torch.optim</b><br/>优化器<br/><i>SGD、Adam、RMSprop 等</i>"]
+    DATA["📦 <b>torch.utils.data</b><br/>数据加载<br/><i>Dataset + DataLoader</i>"]
+    TENSOR --> AUTOGRAD
+    AUTOGRAD --> NN
+    NN --> OPTIM
+    DATA --> NN
+</div>
+
+<h3>1.3 动态计算图 vs 静态计算图</h3>
+<table>
+  <thead><tr><th>特性</th><th>PyTorch（动态图）</th><th>TensorFlow 1.x（静态图）</th></tr></thead>
+  <tbody>
+    <tr><td>构建方式</td><td>每步即时执行，随写随运行（Eager Mode）</td><td>先定义完整图，再统一执行</td></tr>
+    <tr><td>调试</td><td>✅ 可用 Python 调试器、print 任意位置</td><td>❌ 难以调试，图构建和执行分离</td></tr>
+    <tr><td>条件/循环</td><td>✅ 原生 Python if/for，灵活</td><td>需要特殊控制流 API（tf.cond, tf.while）</td></tr>
+    <tr><td>性能</td><td>较优（<code>torch.compile</code> 正在追赶）</td><td>优化空间更大</td></tr>
+    <tr><td>部署</td><td>TorchScript / ONNX / torch.export</td><td>SavedModel / TFLite</td></tr>
+  </tbody>
+</table>
+
+<h3>1.4 最小训练代码骨架</h3>
+<pre><code>import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset
+
+# 1. 数据
+X = torch.randn(1000, 10)
+y = torch.randint(0, 2, (1000,))
+loader = DataLoader(TensorDataset(X, y), batch_size=32, shuffle=True)
+
+# 2. 模型
+model = nn.Sequential(nn.Linear(10, 64), nn.ReLU(), nn.Linear(64, 2))
+
+# 3. 损失 + 优化器
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
+
+# 4. 训练循环
+for epoch in range(10):
+    for xb, yb in loader:
+        pred = model(xb)               # 前向传播
+        loss = criterion(pred, yb)      # 计算损失
+        optimizer.zero_grad()           # 梯度清零
+        loss.backward()                 # 反向传播
+        optimizer.step()                # 更新参数
+    print(f"Epoch {epoch+1}, Loss: {loss.item():.4f}")</code></pre>
+
+
+<!-- ===== SECTION 2: 张量基础 ===== -->
+<h2 id="s2">2. 🧊 张量基础</h2>
+<blockquote class="info">张量（Tensor）是 PyTorch 的核心数据结构，本质是多维数组。与 NumPy 高度互操作。</blockquote>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 张量创建</span>
+    <span class="badges-row"><span class="badge badge-green">基础</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：PyTorch 提供了丰富的张量创建函数，大部分与 NumPy 对应。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 代码</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>从列表创建</strong></td><td><code>torch.tensor([[1,2],[3,4]])</code></td><td>自动推断 dtype</td></tr>
+      <tr><td><strong>全零张量</strong></td><td><code>torch.zeros(3, 4)</code></td><td>shape=(3,4)，float32</td></tr>
+      <tr><td><strong>全一张量</strong></td><td><code>torch.ones(2, 3)</code></td><td>shape=(2,3)，float32</td></tr>
+      <tr><td><strong>随机正态</strong></td><td><code>torch.randn(4, 5)</code></td><td>标准正态分布 N(0,1)</td></tr>
+      <tr><td><strong>随机均匀</strong></td><td><code>torch.rand(3, 3)</code></td><td>[0, 1) 均匀分布</td></tr>
+      <tr><td><strong>等差序列</strong></td><td><code>torch.arange(0, 10, 2)</code></td><td>起点0，终点10，步长2 → [0,2,4,6,8]</td></tr>
+      <tr><td><strong>等分段</strong></td><td><code>torch.linspace(0, 1, 5)</code></td><td>[0, 0.25, 0.5, 0.75, 1.0]（含终点）</td></tr>
+      <tr><td><strong>单位矩阵</strong></td><td><code>torch.eye(4)</code></td><td>4×4 单位矩阵</td></tr>
+      <tr><td><strong>全填充</strong></td><td><code>torch.full((2,3), 7)</code></td><td>shape=(2,3) 全填 7</td></tr>
+      <tr><td><strong>空张量</strong></td><td><code>torch.empty(3, 3)</code></td><td>未初始化内存（快但不安全）</td></tr>
+      <tr><td><strong>克隆形状</strong></td><td><code>torch.zeros_like(x)</code></td><td>创建与 x 同 shape/dtype/device 的零张量</td></tr>
+      <tr><td><strong>指定 dtype</strong></td><td><code>torch.zeros(3, dtype=torch.float64)</code></td><td>创建 float64（double）张量</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 张量属性与信息</span>
+    <span class="badges-row"><span class="badge badge-green">基础</span></span>
+  </div>
+  <table>
+    <thead><tr><th>属性/方法</th><th>说明</th><th>示例</th></tr></thead>
+    <tbody>
+      <tr><td><code>.shape</code></td><td>形状（tuple）</td><td><code>x.shape → torch.Size([2, 3])</code></td></tr>
+      <tr><td><code>.dtype</code></td><td>数据类型</td><td><code>x.dtype → torch.float32</code></td></tr>
+      <tr><td><code>.device</code></td><td>所在设备</td><td><code>x.device → cpu / cuda:0</code></td></tr>
+      <tr><td><code>.ndim</code></td><td>维度数</td><td><code>x.ndim → 2</code></td></tr>
+      <tr><td><code>.numel()</code></td><td>元素总数</td><td><code>x.numel() → 6</code></td></tr>
+      <tr><td><code>.requires_grad</code></td><td>是否追踪梯度</td><td><code>x.requires_grad → False</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 索引与切片</span>
+    <span class="badges-row"><span class="badge badge-green">基础</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：与 NumPy 几乎完全一致的索引和切片语法。</p>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 代码</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>单元素</strong></td><td><code>x[0, 1]</code></td><td>第0行第1列</td></tr>
+      <tr><td><strong>行切片</strong></td><td><code>x[1:3]</code></td><td>第 1~2 行（前闭后开）</td></tr>
+      <tr><td><strong>列操作</strong></td><td><code>x[:, 1]</code></td><td>所有行的第 1 列</td></tr>
+      <tr><td><strong>步长切片</strong></td><td><code>x[::2]</code></td><td>每隔一行取一行</td></tr>
+      <tr><td><strong>布尔索引</strong></td><td><code>x[x &gt; 0]</code></td><td>取所有 &gt;0 的元素（返回一维张量）</td></tr>
+      <tr><td><strong>整数数组索引</strong></td><td><code>x[[0, 2, 3]]</code></td><td>取第 0, 2, 3 行</td></tr>
+      <tr><td><strong>高级索引</strong></td><td><code>x[[0,1], [2,3]]</code></td><td>取 x[0,2] 和 x[1,3]</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 形状操作</span>
+    <span class="badges-row"><span class="badge badge-green">基础</span></span>
+  </div>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 代码</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>改变形状</strong></td><td><code>x.view(3, 4)</code></td><td>共享内存的 reshape（要求连续）</td></tr>
+      <tr><td><strong>安全 reshape</strong></td><td><code>x.reshape(3, 4)</code></td><td>不共享时自动复制</td></tr>
+      <tr><td><strong>增加维度</strong></td><td><code>x.unsqueeze(0)</code></td><td>在第 0 维前插入一维： (3,4)→(1,3,4)</td></tr>
+      <tr><td><strong>减少维度</strong></td><td><code>x.squeeze()</code></td><td>删除所有大小为 1 的维度</td></tr>
+      <tr><td><strong>展平</strong></td><td><code>x.flatten()</code></td><td>展成一维（复制）</td></tr>
+      <tr><td><strong>转置</strong></td><td><code>x.T</code> 或 <code>x.transpose(0,1)</code></td><td>交换两个维度</td></tr>
+      <tr><td><strong>维度重排</strong></td><td><code>x.permute(2, 0, 1)</code></td><td>通用维度重排</td></tr>
+      <tr><td><strong>拼接</strong></td><td><code>torch.cat([a,b], dim=0)</code></td><td>沿指定维度拼接</td></tr>
+      <tr><td><strong>堆叠</strong></td><td><code>torch.stack([a,b], dim=0)</code></td><td>新维度堆叠（shape 必须一致）</td></tr>
+      <tr><td><strong>分割</strong></td><td><code>torch.chunk(x, 3, dim=0)</code></td><td>沿 dim 均分成 3 块</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 数学运算</span>
+    <span class="badges-row"><span class="badge badge-green">基础</span></span>
+  </div>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 代码</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>逐元素运算</strong></td><td><code>a + b, a * b, a / b</code></td><td>+ - * / 都是逐元素</td></tr>
+      <tr><td><strong>矩阵乘法</strong></td><td><code>a @ b</code> 或 <code>torch.matmul(a, b)</code></td><td>矩阵乘法（注意形状匹配）</td></tr>
+      <tr><td><strong>批量矩阵乘</strong></td><td><code>torch.bmm(a, b)</code></td><td>3D: (B, M, K) @ (B, K, N)</td></tr>
+      <tr><td><strong>求和</strong></td><td><code>x.sum()</code> / <code>x.sum(dim=0)</code></td><td>全部求和 / 沿某维求和</td></tr>
+      <tr><td><strong>均值</strong></td><td><code>x.mean()</code></td><td>所有元素的均值</td></tr>
+      <tr><td><strong>最大/最小</strong></td><td><code>x.max()</code> / <code>x.min()</code></td><td></td></tr>
+      <tr><td><strong>argmax/argmin</strong></td><td><code>x.argmax(dim=1)</code></td><td>沿某维返回最大值的索引</td></tr>
+      <tr><td><strong>指数/对数</strong></td><td><code>x.exp()</code> / <code>x.log()</code></td><td>ln 用 log（不是 log10！）</td></tr>
+      <tr><td><strong>Softmax</strong></td><td><code>F.softmax(x, dim=-1)</code></td><td>沿最后一维做 softmax</td></tr>
+      <tr><td><strong>裁剪</strong></td><td><code>x.clamp(min=0, max=1)</code></td><td>限制值在 [0, 1] 区间</td></tr>
+      <tr><td><strong>点积</strong></td><td><code>torch.dot(a, b)</code></td><td>一维张量点积</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 设备管理 &amp; NumPy 互转</span>
+    <span class="badges-row"><span class="badge badge-green">基础</span></span>
+  </div>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 代码</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>移到 GPU</strong></td><td><code>x.cuda()</code> 或 <code>x.to('cuda')</code></td><td>推荐 <code>.to(device)</code> 模式</td></tr>
+      <tr><td><strong>移回 CPU</strong></td><td><code>x.cpu()</code> 或 <code>x.to('cpu')</code></td><td></td></tr>
+      <tr><td><strong>设备变量模式</strong></td><td><code>device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')</code></td><td>⭐ 推荐模式</td></tr>
+      <tr><td><strong>Tensor→NumPy</strong></td><td><code>x.numpy()</code></td><td>⚠️ 共享内存！仅 CPU 张量可用</td></tr>
+      <tr><td><strong>NumPy→Tensor</strong></td><td><code>torch.from_numpy(arr)</code></td><td>⚠️ 共享内存</td></tr>
+      <tr><td><strong>安全转 NumPy</strong></td><td><code>x.detach().cpu().numpy()</code></td><td>⭐ 含梯度的 GPU 张量安全转换</td></tr>
+      <tr><td><strong>数据类型转换</strong></td><td><code>x.to(torch.float64)</code> 或 <code>x.double()</code></td><td>float32→float64</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PT2_END -->
+
