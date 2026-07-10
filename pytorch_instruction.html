@@ -667,4 +667,260 @@ x = layers[0](x)  # 需手动调用</code></pre>
 
 <!-- PT3_END -->
 
+<!-- ===== SECTION 6: 损失函数与优化器 ===== -->
+<h2 id="s6">6. 🎯 损失函数与优化器</h2>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 常用损失函数</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <table>
+    <thead><tr><th>损失函数</th><th>适用场景</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><code>nn.CrossEntropyLoss()</code></td><td>多分类（⭐ 最常用）</td><td>内置 softmax + NLLLoss，输入 raw logits</td></tr>
+      <tr><td><code>nn.BCEWithLogitsLoss()</code></td><td>二分类 / 多标签</td><td>⭐ 推荐（比 BCE + Sigmoid 分开写数值更稳）</td></tr>
+      <tr><td><code>nn.MSELoss()</code></td><td>回归</td><td>均方误差</td></tr>
+      <tr><td><code>nn.L1Loss()</code></td><td>回归（鲁棒）</td><td>MAE，对异常值不敏感</td></tr>
+      <tr><td><code>nn.HuberLoss()</code></td><td>回归（平滑）</td><td>L1 和 L2 的折中</td></tr>
+      <tr><td><code>nn.NLLLoss()</code></td><td>分类（配 log_softmax）</td><td>通常直接用 CrossEntropyLoss</td></tr>
+      <tr><td><code>nn.KLDivLoss()</code></td><td>KL 散度（蒸馏）</td><td>知识蒸馏常用</td></tr>
+      <tr><td><code>nn.CosineEmbeddingLoss()</code></td><td>相似度学习</td><td>度量学习 / 对比学习</td></tr>
+      <tr><td><code>nn.TripletMarginLoss()</code></td><td>三元组损失</td><td>人脸识别、检索</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div><strong>CrossEntropyLoss 常见错误</strong>：<br>
+    • 输入应为 <strong>raw logits</strong>（不要先做 softmax）— CrossEntropyLoss 内部已经包含 softmax<br>
+    • labels 应为 <strong>类索引整数</strong>（不是 one-hot）— <code>torch.tensor([2, 5, 1])</code> 而非 one-hot 向量<br>
+    • 缺少 <code>ignore_index</code> 参数可能导致 padding 位置被错误计算</div>
+  </div>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 常用优化器</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <table>
+    <thead><tr><th>优化器</th><th>推荐场景</th><th>典型参数</th></tr></thead>
+    <tbody>
+      <tr><td><code>optim.Adam(params, lr=1e-3)</code></td><td>⭐ 通用首选</td><td><code>betas=(0.9, 0.999)</code>, <code>weight_decay=1e-4</code></td></tr>
+      <tr><td><code>optim.AdamW(params, lr=1e-3)</code></td><td>⭐ Transformer / 大模型</td><td>Adam + 解耦权重衰减（更正确的正则化）</td></tr>
+      <tr><td><code>optim.SGD(params, lr=0.01, momentum=0.9)</code></td><td>图像分类（ResNet 等）</td><td>配合 scheduler 效果最佳</td></tr>
+      <tr><td><code>optim.RMSprop(params, lr=1e-3)</code></td><td>RNN / 强化学习</td><td><code>alpha=0.99</code></td></tr>
+    </tbody>
+  </table>
+  <pre><code># ⭐ 推荐：带权重衰减的 AdamW
+optimizer = optim.AdamW(model.parameters(), lr=1e-3, weight_decay=0.01)
+
+# 分组设置不同学习率
+optimizer = optim.AdamW([
+    {'params': model.backbone.parameters(), 'lr': 1e-4},    # backbone 低学习率
+    {'params': model.head.parameters(),    'lr': 1e-3},    # head 高学习率
+], weight_decay=0.01)</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 学习率调度器 (lr_scheduler)</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <table>
+    <thead><tr><th>调度器</th><th>行为</th><th>适用场景</th></tr></thead>
+    <tbody>
+      <tr><td><code>StepLR(opt, step_size=30, gamma=0.1)</code></td><td>每 N 个 epoch 将 lr 乘以 gamma</td><td>基准调度</td></tr>
+      <tr><td><code>CosineAnnealingLR(opt, T_max=100)</code></td><td>余弦曲线平滑降至 0</td><td>⭐ 常用</td></tr>
+      <tr><td><code>ReduceLROnPlateau(opt, mode='min', patience=5)</code></td><td>指标不降时降低 lr</td><td>自适应</td></tr>
+      <tr><td><code>OneCycleLR(opt, max_lr=0.01, steps_per_epoch=...)</code></td><td>先升后降，快速收敛</td><td>⭐ 训练加速</td></tr>
+      <tr><td><code>CosineAnnealingWarmRestarts(opt, T_0=10)</code></td><td>余弦退火 + 周期性重启</td><td>训练更久</td></tr>
+    </tbody>
+  </table>
+  <pre><code>scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
+
+for epoch in range(epochs):
+    train_one_epoch(...)
+    scheduler.step()   # epoch 结束后调用（ReduceLROnPlateau 需传 metric）</code></pre>
+</div>
+
+
+<!-- ===== SECTION 7: 训练与评估 ===== -->
+<h2 id="s7">7. 🏋️ 训练与评估</h2>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 标准训练模板</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <pre><code>def train_epoch(model, loader, criterion, optimizer, device):
+    model.train()
+    total_loss, correct = 0, 0
+    for x, y in loader:
+        x, y = x.to(device), y.to(device)
+
+        optimizer.zero_grad()
+        output = model(x)
+        loss = criterion(output, y)
+        loss.backward()
+        optimizer.step()
+
+        total_loss += loss.item() * x.size(0)
+        correct += (output.argmax(1) == y).sum().item()
+
+    return total_loss / len(loader.dataset), correct / len(loader.dataset)
+
+@torch.no_grad()
+def evaluate(model, loader, criterion, device):
+    model.eval()
+    total_loss, correct = 0, 0
+    for x, y in loader:
+        x, y = x.to(device), y.to(device)
+        output = model(x)
+        loss = criterion(output, y)
+        total_loss += loss.item() * x.size(0)
+        correct += (output.argmax(1) == y).sum().item()
+    return total_loss / len(loader.dataset), correct / len(loader.dataset)</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 保存与加载 Checkpoint</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <table>
+    <thead><tr><th>🎬 场景</th><th>⌨️ 代码</th><th>📝 说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>保存模型</strong></td><td><code>torch.save(model.state_dict(), 'model.pth')</code></td><td>⭐ 推荐：只保存权重</td></tr>
+      <tr><td><strong>加载权重</strong></td><td><code>model.load_state_dict(torch.load('model.pth'))</code></td><td>⭐ 需要先有 model 结构</td></tr>
+      <tr><td><strong>保存完整 checkpoint</strong></td><td><code>torch.save({'epoch': e, 'model': model.state_dict(), 'opt': opt.state_dict(), 'best_acc': acc}, 'ckpt.pth')</code></td><td>可从中断处恢复训练</td></tr>
+      <tr><td><strong>加载 checkpoint</strong></td><td><code>ckpt = torch.load('ckpt.pth'); model.load_state_dict(ckpt['model']); opt.load_state_dict(ckpt['opt'])</code></td><td>恢复完整训练状态</td></tr>
+      <tr><td><strong>保存整个模型</strong></td><td><code>torch.save(model, 'model_full.pth')</code></td><td>⚠️ 不推荐：依赖类定义</td></tr>
+      <tr><td><strong>最佳实践</strong></td><td><code>torch.save(model.state_dict(), 'best.pth', _use_new_zipfile_serialization=True)</code></td><td>使用新序列化格式</td></tr>
+    </tbody>
+  </table>
+  <pre><code># 完整 checkpoint 保存/加载模板
+# 保存
+if val_acc > best_acc:
+    best_acc = val_acc
+    torch.save({
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'best_acc': best_acc,
+    }, 'best_checkpoint.pth')
+
+# 加载
+checkpoint = torch.load('best_checkpoint.pth', map_location=device)
+model.load_state_dict(checkpoint['model_state_dict'])
+optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+start_epoch = checkpoint['epoch'] + 1</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 Early Stopping 模板</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <pre><code>class EarlyStopping:
+    def __init__(self, patience=10, min_delta=0, mode='min'):
+        self.patience = patience
+        self.min_delta = min_delta
+        self.mode = mode
+        self.counter = 0
+        self.best_score = float('inf') if mode == 'min' else float('-inf')
+        self.early_stop = False
+
+    def __call__(self, score):
+        if self.mode == 'min':
+            improved = score < self.best_score - self.min_delta
+        else:
+            improved = score > self.best_score + self.min_delta
+
+        if improved:
+            self.best_score = score
+            self.counter = 0
+        else:
+            self.counter += 1
+            if self.counter >= self.patience:
+                self.early_stop = True
+        return self.early_stop</code></pre>
+</div>
+
+
+<!-- ===== SECTION 8: GPU 加速 ===== -->
+<h2 id="s8">8. ⚡ GPU 加速</h2>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 设备管理最佳实践</span>
+    <span class="badges-row"><span class="badge badge-green">核心</span></span>
+  </div>
+  <pre><code># ⭐ 推荐模式：全局 device 变量
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = model.to(device)
+
+# 训练时
+for x, y in loader:
+    x, y = x.to(device), y.to(device)   # 数据也移到同一设备
+    ...
+
+# GPU 信息
+print(torch.cuda.is_available())         # 是否有 GPU
+print(torch.cuda.device_count())         # GPU 数量
+print(torch.cuda.get_device_name(0))     # GPU 型号
+print(torch.cuda.memory_allocated()/1e9) # 已分配显存 (GB)
+print(torch.cuda.memory_reserved()/1e9)  # 缓存显存 (GB)</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 混合精度训练 (AMP)</span>
+    <span class="badges-row"><span class="badge badge-yellow">进阶</span></span>
+  </div>
+  <p class="one-liner">💡 <strong>一句话</strong>：用 float16 做前向/反向（快+省显存），关键步骤用 float32 保精度。几乎无代价提速 30-50%。</p>
+  <pre><code>scaler = torch.amp.GradScaler()   # 防止 float16 梯度下溢
+
+for x, y in loader:
+    x, y = x.to(device), y.to(device)
+    optimizer.zero_grad()
+
+    with torch.amp.autocast(device_type='cuda'):  # 自动选择 float16/float32
+        output = model(x)
+        loss = criterion(output, y)
+
+    scaler.scale(loss).backward()   # loss 放大 → 反向 → 梯度缩回
+    scaler.step(optimizer)
+    scaler.update()</code></pre>
+</div>
+
+<div class="cmd-card">
+  <div class="cmd-header">
+    <span class="cmd-name">🎯 多 GPU (DataParallel vs DDP)</span>
+    <span class="badges-row"><span class="badge badge-purple">进阶</span></span>
+  </div>
+  <table>
+    <thead><tr><th>方法</th><th>优点</th><th>缺点</th><th>推荐?</th></tr></thead>
+    <tbody>
+      <tr><td><code>nn.DataParallel</code></td><td>一行代码，简单</td><td>效率低，主卡负载不均</td><td>❌ 不推荐</td></tr>
+      <tr><td><code>torch.nn.parallel.DistributedDataParallel (DDP)</code></td><td>高效，每卡独立进程</td><td>配置稍复杂</td><td>⭐ 推荐</td></tr>
+      <tr><td><code>torch.compile()</code></td><td>图编译加速</td><td>PyTorch 2.0+，部分模型有兼容问题</td><td>✅ 实验性使用</td></tr>
+    </tbody>
+  </table>
+  <pre><code># DDP 简化用法（单机多卡）
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
+
+# 初始化（通常用 torchrun 启动）
+dist.init_process_group(backend='nccl')
+model = DDP(model.to(local_rank), device_ids=[local_rank])
+
+# torch.compile（PyTorch 2.0+）
+model = torch.compile(model)   # 一行加速！
+# 或 model = torch.compile(model, mode="reduce-overhead")   # 减少 overhead</code></pre>
+</div>
+
+<!-- PT4_END -->
+
+
 
